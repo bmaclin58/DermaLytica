@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from DermaLytica.views import homeView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+	path('DermaLytica/',homeView.as_view(),name='DermaAI-home')
 ]

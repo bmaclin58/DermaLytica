@@ -12,7 +12,16 @@ IMAGE_LOCATION = {
 		}
 
 class userData (models.Model):
-	image = models.ImageField(upload_to='images/')
+	image = models.ImageField()
 	age = models.IntegerField()
-	gender = models.CharField(choices=[('Male','Male'),('Female','Female')])
-	location = models.CharField(choices=IMAGE_LOCATION)
+	gender = models.CharField(
+			choices=[('Male','Male'),('Female','Female')],
+			max_length=6
+	)
+	location = models.CharField(choices=IMAGE_LOCATION, max_length=20)
+	zipCode = models.CharField(
+			max_length=5,
+			blank=True,)
+
+	class Meta:
+		app_label = 'DermaLytica'
