@@ -1,13 +1,12 @@
 import base64
 import io
-import os
 
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from django.conf import settings
 from django.http import JsonResponse
 
+from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THRESHOLD
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
