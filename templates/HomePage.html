@@ -20,7 +20,6 @@
 			<div class="card">
 				<div class="card-body">
 					<form method="POST" action="{{ form_action|default:'.' }}">
-						{% csrf_token %}
 						{% crispy form %}
 						<div class="text-center">
 							<input type="submit" value="Submit" class="btn btn-primary">
