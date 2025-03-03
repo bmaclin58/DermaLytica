@@ -1,5 +1,7 @@
-from DermaLytica.Prediction_Model.Marie import AGE_MEAN, AGE_STD
 import numpy as np
+
+from DermaLytica.Prediction_Model.GlobalVariables import AGE_MEAN, AGE_STD
+
 
 def prepare_metadata(age, gender, location):
 	"""

@@ -11,13 +11,6 @@ from django.http import JsonResponse
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
-# Define constants
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'Prediction_Model', 'models', 'derma_model.h5')
-AGE_MEAN = 57.70533017
-AGE_STD = 14.11323567
-IMAGE_SIZE = (224, 224)
-OPTIMAL_THRESHOLD = 0.2494
-
 # Load the model
 model = None
 try:

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from DermaLytica.Prediction_Model.Marie import IMAGE_SIZE
+from DermaLytica.Prediction_Model.GlobalVariables import IMAGE_SIZE
 
 
 def create_mask_otsu(image):
