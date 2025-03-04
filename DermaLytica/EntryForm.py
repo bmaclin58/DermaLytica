@@ -1,5 +1,7 @@
+from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Div, Layout, Submit
+from crispy_forms.templatetags.crispy_forms_field import css_class
 from django import forms
 
 from DermaLytica.models import userData
@@ -17,6 +19,8 @@ class InputForm(forms.ModelForm):
 		self.helper = FormHelper()
 		self.helper.form_method = 'post'
 		self.helper.form_action = '.'
+
+		self.helper.attrs = {'enctype': 'multipart/form-data'}
 
 		self.fields['zipCode'].label = "Zip Code (Optional)"
 		self.fields['location'].label = "Body Location of Image"
@@ -37,5 +41,9 @@ class InputForm(forms.ModelForm):
 						Column('zipCode', css_class='form-group col-6'),
 						css_class='row m-3 justify-content-center'
 				),
+				FormActions(
+						Submit('submit', 'Submit', css_class='btn btn-primary'),
+						css_class='text-center'
+				)
 
 		)

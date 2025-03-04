@@ -5,23 +5,37 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 from django.http import JsonResponse
+from pyjsparser.parser import false
 
+from DermaLytica.GPS import dermatologistLookup
 from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THRESHOLD
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
-# Load the model
 model = None
-try:
-	model = tf.keras.models.load_model(MODEL_PATH)
-	print("Model loaded successfully")
-except Exception as e:
-	print(f"Error loading model: {e}")
 
-def predict_lesion(image, age, gender, location) -> JsonResponse:
+def get_model():
+	global model
+	if model is None:
+		try:
+			model = tf.keras.models.load_model(
+					MODEL_PATH,
+					compile=false)
+			print("Model loaded successfully")
+
+		except Exception as e:
+			print(f"Error loading model: {e}")
+	return model
+
+
+def predict_lesion(image, age, gender, location, zipCode):
 	"""
 	API endpoint to predict if a skin lesion is benign or malignant
 	"""
+	model = get_model()
+	if model is None:
+		return JsonResponse({'error': 'Model not loaded'}, status=500)
+
 	try:
 		# Decode the base64 image
 		try:
@@ -72,18 +86,22 @@ def predict_lesion(image, age, gender, location) -> JsonResponse:
 			# Apply optimal threshold. More accurate and leans towards avoiding false negatives
 			is_malignant = prediction_value >= OPTIMAL_THRESHOLD
 
-			
+			dermatology_Lists = None
+
+			if is_malignant and zipCode:
+				dermatology_Lists = dermatologistLookup(zipCode)
 
 			# Prepare response
 			response = {
-					'prediction':     int(is_malignant),  # 0 for benign, 1 for malignant
-					'probability':    prediction_value,
-					'threshold_used': OPTIMAL_THRESHOLD,
-					'classification': 'Malignant' if is_malignant else 'Benign',
-					'confidence':     prediction_value if is_malignant else 1 - prediction_value
+					'prediction':        int(is_malignant),  # 0 for benign, 1 for malignant
+					'probability':       prediction_value,
+					'threshold_used':    OPTIMAL_THRESHOLD,
+					'classification':    'Malignant' if is_malignant else 'Benign',
+					'confidence':        prediction_value if is_malignant else 1 - prediction_value,
+					'dermatology_Lists': dermatology_Lists
 			}
 
-			return JsonResponse(response)
+			return response
 
 		except Exception as e:
 			return JsonResponse({'error': f'Error making prediction: {str(e)}'}, status=500)

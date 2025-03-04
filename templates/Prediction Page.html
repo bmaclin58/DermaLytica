@@ -1,10 +1,147 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Title</title>
+    <meta charset="UTF-8">
+    <title>DermaLytica AI - Prediction Results</title>
+    {% include 'Components/Derma head.html' %}
+    <style>
+        .result-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .confidence-box {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .benign-result {
+            color: #28a745;
+            border: 2px solid #28a745;
+        }
+        .malignant-result {
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+        .dermatologist-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .dermatologist-table th, .dermatologist-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .dermatologist-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .dermatologist-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .result-heading {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .result-message {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
-<body>
+<body style="background-image: url('{% static 'Photos/SiteBackground.png' %}')">
 
+<div id="vantajs-bg" class="vantajs-bg"></div>
+
+<div class="container h-100 d-flex justify-content-center align-items-center" style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
+    <div class="row w-100">
+        <!-- Result Card -->
+        <div class="col-md-6">
+            <div class="result-card">
+                {% if prediction == 0 %}
+                    <div class="result-heading text-success">You appear clear!</div>
+                    <div class="result-message">
+                        Our analysis indicates that your skin lesion appears benign. Continue monitoring for any changes.
+                    </div>
+                {% else %}
+                    <div class="result-heading text-danger">You should get that looked at</div>
+                    <div class="result-message">
+                        Our analysis suggests this lesion might be malignant. We recommend consulting with a dermatologist as soon as possible.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Confidence Score Card -->
+        <div class="col-md-6">
+            <div class="confidence-box {% if prediction == 0 %}benign-result{% else %}malignant-result{% endif %}">
+                Confidence: {{ confidence|floatformat:2 }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Dermatologist List (Only shown if malignant) -->
+    {% if prediction == 1 and dermatology_Lists %}
+        <div class="row w-100 mt-4">
+            <div class="col-12">
+                <div class="result-card">
+                    <h3>Dermatologists Near You</h3>
+                    <p>Here are some dermatologists in your area who can provide professional evaluation:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="dermatologist-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Rating</th>
+                                    <th>Address</th>
+                                    <th>Phone</th>
+                                    <th>Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dermatologist in dermatology_Lists %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ dermatologist.url }}" target="_blank">{{ dermatologist.name }}</a>
+                                        </td>
+                                        <td>{{ dermatologist.rating }} ★</td>
+                                        <td>{{ dermatologist.display_address }}</td>
+                                        <td>{{ dermatologist.display_phone }}</td>
+                                        <td>{{ dermatologist.distance|floatformat:1 }} miles</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+VANTA.NET({
+    el: '#vantajs-bg',
+    mouseControls: true,
+    touchControls: true,
+    gyroControls: false,
+    scale: 1.00,
+    scaleMobile: 1.00,
+    color: 0xe6a029,
+    backgroundColor: 0x1a1a22,
+    points: 9.00,
+    spacing: 17.00
+})
+</script>
 </body>
 </html>

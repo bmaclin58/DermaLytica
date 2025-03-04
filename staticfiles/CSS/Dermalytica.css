@@ -108,6 +108,31 @@ body {
 
 }
 
+.vantajs-bg {
+    position: absolute;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+}
+
+.titleCard {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-size: 3.5rem;
+    font-weight: 450;
+    margin-top: 20%;
+}
+
+.titleCard span {
+    font-size: 1.5rem;
+    font-weight: 400;
+    font-family: 'Open Sans';
+}
+
 hr {
     margin: 1rem 0;
     color: inherit;
