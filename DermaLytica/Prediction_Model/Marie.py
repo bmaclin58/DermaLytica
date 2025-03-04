@@ -72,6 +72,8 @@ def predict_lesion(image, age, gender, location) -> JsonResponse:
 			# Apply optimal threshold. More accurate and leans towards avoiding false negatives
 			is_malignant = prediction_value >= OPTIMAL_THRESHOLD
 
+			
+
 			# Prepare response
 			response = {
 					'prediction':     int(is_malignant),  # 0 for benign, 1 for malignant

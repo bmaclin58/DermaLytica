@@ -22,6 +22,7 @@ load_dotenv()
 
 # SECRET_KEY = os.getenv("DJANGO_KEY")
 SECRET_KEY = '=mi&+w97!l#hq=&wuki(%peh-_4ve$zo@gm4ah!ds&*w06s-gw' #don't worry HACKERS this is only temp!
+YELP_API_KEY = os.getenv("YELP_API_KEY")
 # DEBUG = os.getenv("DEBUG") == "TRUE"
 DEBUG = True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
