@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.generic import FormView, TemplateView
 
 from DermaLytica.EntryForm import InputForm
@@ -7,46 +8,43 @@ from DermaLytica.Prediction_Model.UtilityFunctions.ImageConvert import convert_t
 
 
 class DermaLytica_HomeView(FormView):
-	template_name = 'HomePage.html'
-	form_class = InputForm
+    template_name = 'HomePage.html'
+    form_class = InputForm
 
-	def form_valid(self, form):
-		instance = form.save(commit=False)
-
-		image = instance.image
-		age = instance.age
-		gender = instance.gender
-		location = instance.location
-		zipCode = instance.zipCode
-
-		if not image.name.lower().endswith(('.jpg', '.jpeg')):
-			image = convert_to_jpg(image)
-			instance.image = image
-
-		prediction_results = predict_lesion(image, age, gender, location, zipCode)
-
-		# Store the results in session
-		self.request.session['prediction_results'] = {
-				'prediction':        prediction_results.get('classification'),
-				'confidence':        prediction_results.get('confidence'),
-				'dermatology_Lists': prediction_results.get('dermatology_Lists', None),
-		}
-
-		# Redirect to the PredictionView
-		return redirect('prediction')
+    def get_form_action(self):
+	    """ Change the form action to submit to 'prediction' view instead of itself """
+	    return reverse('prediction')
 
 
 class PredictionView(TemplateView):
-	template_name = 'Prediction Page.html'
+    template_name = 'Prediction Page.html'
 
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
+    def post(self, request, *args, **kwargs):
+        form = InputForm(request.POST, request.FILES)  # Get form data
 
-		# Get the prediction results from session
-		prediction_results = self.request.session.get('prediction_results', {})
-		context.update(prediction_results)
+        if form.is_valid():
+            instance = form.save(commit=False)
 
-		# Clear the session data after retrieving it
-		self.request.session.pop('prediction_results', None)
+            image = instance.image
+            age = instance.age
+            gender = instance.gender
+            location = instance.location
+            zipCode = instance.zipCode
 
-		return context
+            if not image.name.lower().endswith(('.jpg', '.jpeg')):
+                image = convert_to_jpg(image)
+                instance.image = image
+
+            # Make prediction
+            prediction_results = predict_lesion(image, age, gender, location, zipCode)
+
+            # Pass the results to the template
+            context = {
+                "prediction": prediction_results.get("classification"),
+                "confidence": prediction_results.get("confidence"),
+                "dermatology_Lists": prediction_results.get("dermatology_Lists", []),
+            }
+            return self.render_to_response(context)
+
+        # If the form is invalid, return to the home page with errors
+        return render(request, "HomePage.html", {"form": form})

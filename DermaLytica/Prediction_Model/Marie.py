@@ -28,8 +28,11 @@ def get_model():
 
 
 def get_io_details(model):
+	print("Getting input/output details")
 	input_details = model.get_input_details()
+	print(input_details)
 	output_details = model.get_output_details()
+	print(output_details)
 	return input_details, output_details
 
 
@@ -39,28 +42,45 @@ def predict_lesion(image, age, gender, location, zipCode):
 	"""
 	model = get_model()
 	if model is None:
-		return JsonResponse({'error': 'Model not loaded'}, status=500)
+		print('Model not loaded')
+		return {"classification": "Error", "confidence": 0, "dermatology_Lists": []}
 
 	try:
-		# Decode and process the image
+		# Handle different image input types
 		try:
-			if ',' in image:
-				image = image.split(',')[1]
-
-			image_bytes = base64.b64decode(image)
-			image = np.array(Image.open(io.BytesIO(image_bytes)))
+			# If image is a Django ImageFieldFile
+			if hasattr(image, 'read'):
+				image_data = image.read()
+				image = np.array(Image.open(io.BytesIO(image_data)))
+			# If image is a base64 string
+			elif isinstance(image, str):
+				if ',' in image:
+					image = image.split(',')[1]
+				image_bytes = base64.b64decode(image)
+				image = np.array(Image.open(io.BytesIO(image_bytes)))
+			# If image is already a numpy array
+			elif isinstance(image, np.ndarray):
+				pass
+			else:
+				raise ValueError(f"Unsupported image type: {type(image)}")
 
 		except Exception as e:
-			return JsonResponse({'error': f'Invalid image format: {str(e)}'}, status=400)
+			print(f'Invalid image format: {str(e)}')
+			return {"classification": "Error", "confidence": 0, "dermatology_Lists": []}
 
 		# Preprocess image and create mask
 		try:
+			print('Preprocessing image and creating mask')
 			mask = create_mask_otsu(image)
+			print("Mask shape")
 			preprocessed_image = preprocess_image(image)
+			print(f"Image shape: {preprocessed_image.shape}")
 			mask = preprocess_image(mask)
+			print(f"Image shape: {mask.shape}")
 
 		except Exception as e:
-			return JsonResponse({'error': f'Error preprocessing image: {str(e)}'}, status=500)
+			print(f'Error preprocessing image: {str(e)}')
+			return {"classification": "Error", "confidence": 0, "dermatology_Lists": []}
 
 		# Prepare metadata
 		metadata = prepare_metadata(age, gender, location)
@@ -73,19 +93,21 @@ def predict_lesion(image, age, gender, location, zipCode):
 		mask_input = np.expand_dims(mask, axis=0).astype(np.float32)
 		metadata_input = np.expand_dims(metadata, axis=0).astype(np.float32)
 
-		# Set the model's inputs
-		model.set_tensor(input_details[0]['index'], image_input)
-		model.set_tensor(input_details[1]['index'], mask_input)
-		model.set_tensor(input_details[2]['index'], metadata_input)
+		# Set the model's inputs - CORRECTED ORDER based on input_details
+		model.set_tensor(input_details[0]['index'], mask_input)  # mask input
+		model.set_tensor(input_details[1]['index'], metadata_input)  # metadata input
+		model.set_tensor(input_details[2]['index'], image_input)  # image input
 
+		print('Inputs set, Invoke model')
 		# Run inference
 		model.invoke()
-
+		print('Model invoked, Get output')
 		# Get the output
 		prediction = model.get_tensor(output_details[0]['index'])[0][0]
 
 		# Apply thresholding
 		is_malignant = prediction >= OPTIMAL_THRESHOLD
+		print(f'Prediction: {prediction}, Threshold: {OPTIMAL_THRESHOLD}, Malignant: {is_malignant}')
 		dermatology_Lists = None
 
 		if is_malignant and zipCode:
@@ -97,7 +119,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 				'probability':       float(prediction),
 				'threshold_used':    OPTIMAL_THRESHOLD,
 				'classification':    'Malignant' if is_malignant else 'Benign',
-				'confidence':        prediction if is_malignant else 1 - prediction,
+				'confidence':        float(prediction if is_malignant else 1 - prediction) * 100,
 				'dermatology_Lists': dermatology_Lists
 		}
 		for key, value in response.items():
@@ -106,4 +128,5 @@ def predict_lesion(image, age, gender, location, zipCode):
 		return response
 
 	except Exception as e:
-		return JsonResponse({'error': f'Error making prediction: {str(e)}'}, status=500)
+		print(f'Error making prediction: {str(e)}')
+		return {"classification": "Error", "confidence": 0, "dermatology_Lists": []}

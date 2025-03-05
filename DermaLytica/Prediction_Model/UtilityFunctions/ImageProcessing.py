@@ -45,6 +45,7 @@ def create_mask_otsu(image):
 
 	# Convert to a 3-channel image for the model
 	mask_3channel = cv2.cvtColor(mask_clean, cv2.COLOR_GRAY2RGB)
+	print(f'Mask shape')
 
 	return mask_3channel
 
@@ -64,5 +65,6 @@ def preprocess_image(image_data):
 
 	# Normalize pixel values
 	image_data = image_data.astype(np.float32) / 255.0
+	print(f'Image shape: {image_data.shape}')
 
 	return image_data

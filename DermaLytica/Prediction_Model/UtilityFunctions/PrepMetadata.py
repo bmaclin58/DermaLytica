@@ -11,6 +11,7 @@ def prepare_metadata(age, gender, location):
 				 Location_Legs, Location_Mouth & Groin, Location_Palms & Soles, Location_Shoulders & Arms,
 				 Location_Side Torso (Ribs)]
 	"""
+	print(f'Preparing metadata for age: {age}, gender: {gender}, location: {location}')
 	# Standardize age
 	age_standardized = (float(age) - AGE_MEAN) / AGE_STD
 
@@ -38,5 +39,6 @@ def prepare_metadata(age, gender, location):
 
 	if location in location_mapping:
 		metadata[location_mapping[location]] = 1.0
+	print(f'Metadata: {metadata}')
 
 	return metadata

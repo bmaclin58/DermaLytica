@@ -65,15 +65,15 @@
 <div class="container h-100 d-flex justify-content-center align-items-center" style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
     <div class="row w-100">
         <!-- Result Card -->
-        <div class="col-md-6">
+        <div class="col-md-6 my-auto">
             <div class="result-card">
-                {% if prediction == 0 %}
-                    <div class="result-heading text-success">You appear clear!</div>
+                {% if prediction == 'Benign' %}
+                    <div class="result-heading text-success text-center">You Appear CLEAR!</div>
                     <div class="result-message">
                         Our analysis indicates that your skin lesion appears benign. Continue monitoring for any changes.
                     </div>
                 {% else %}
-                    <div class="result-heading text-danger">You should get that looked at</div>
+                    <div class="result-heading text-danger text-center">You should get that looked at</div>
                     <div class="result-message">
                         Our analysis suggests this lesion might be malignant. We recommend consulting with a dermatologist as soon as possible.
                     </div>
@@ -82,21 +82,21 @@
         </div>
 
         <!-- Confidence Score Card -->
-        <div class="col-md-6">
-            <div class="confidence-box {% if prediction == 0 %}benign-result{% else %}malignant-result{% endif %}">
+        <div class="col-md-6 my-auto">
+            <div class="confidence-box {% if prediction == 'Benign' %}benign-result{% else %}malignant-result{% endif %}">
                 Confidence: {{ confidence|floatformat:2 }}%
             </div>
         </div>
     </div>
 
     <!-- Dermatologist List (Only shown if malignant) -->
-    {% if prediction == 1 and dermatology_Lists %}
+    {% if prediction != 'Benign' and dermatology_Lists %}
         <div class="row w-100 mt-4">
             <div class="col-12">
                 <div class="result-card">
                     <h3>Dermatologists Near You</h3>
                     <p>Here are some dermatologists in your area who can provide professional evaluation:</p>
-                    
+
                     <div class="table-responsive">
                         <table class="dermatologist-table">
                             <thead>

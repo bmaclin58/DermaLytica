@@ -25,7 +25,7 @@
 		<div class="col-md-6">
 			<div class="card">
 				<div class="card-body">
-					<form method="POST" action="{{ form_action|default:'.' }}" enctype="multipart/form-data">
+					<form method="POST" action="{% url 'prediction' %}" enctype="multipart/form-data">
 						{% crispy form %}
 					</form>
 
