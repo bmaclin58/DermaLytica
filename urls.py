@@ -19,11 +19,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
-from DermaLytica.views import DermaLitica_HomeView, PredictionView
+from DermaLytica.views import DermaLytica_HomeView, PredictionView
 
 urlpatterns = [
 	path('admin/', admin.site.urls),
-	path('DermaLytica/', DermaLitica_HomeView.as_view(), name='DermaAI-home'),
+	path('DermaLytica/', DermaLytica_HomeView.as_view(), name='DermaAI-home'),
 	path('prediction/', PredictionView.as_view(), name='prediction'),
 
 ]
