@@ -2,3 +2,4 @@
 /DermaLytica/Prediction_Model/AI_Models/derma_model.h5
 /DermaLytica/Prediction_Model/AI_Models/derma_model_keras.keras
 /DermaLytica/Prediction_Model/AI_Models/KERAS_model.tflite
+/.venv/
