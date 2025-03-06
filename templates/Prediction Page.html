@@ -1,69 +1,15 @@
+{% extends 'Components/baseDermaLytics.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>DermaLytica AI - Prediction Results</title>
-    {% include 'Components/Derma head.html' %}
-    <style>
-        .result-card {
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .confidence-box {
-            text-align: center;
-            padding: 30px;
-            border-radius: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .benign-result {
-            color: #28a745;
-            border: 2px solid #28a745;
-        }
-        .malignant-result {
-            color: #dc3545;
-            border: 2px solid #dc3545;
-        }
-        .dermatologist-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        .dermatologist-table th, .dermatologist-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .dermatologist-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .dermatologist-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .result-heading {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .result-message {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body style="background-image: url('{% static 'Photos/SiteBackground.png' %}')">
+{% block extraCSS %}
+{% include 'Components/PredictionPageCSS.html' %}
+{% endblock extraCSS %}
 
-<div id="vantajs-bg" class="vantajs-bg"></div>
+{% block content %}
 
-<div class="container h-100 d-flex justify-content-center align-items-center" style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
-    <div class="row w-100">
+<div class="container d-flex flex-column justify-content-center" style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
+    <!-- First Row: Results and Confidence -->
+    <div class="row mb-4">
         <!-- Result Card -->
         <div class="col-md-6 my-auto">
             <div class="result-card">
@@ -89,9 +35,9 @@
         </div>
     </div>
 
-    <!-- Dermatologist List (Only shown if malignant) -->
+    <!-- Second Row: Dermatologist List (Only shown if malignant) -->
     {% if prediction != 'Benign' and dermatology_Lists %}
-        <div class="row w-100 mt-4">
+        <div class="row">
             <div class="col-12">
                 <div class="result-card">
                     <h3>Dermatologists Near You</h3>
@@ -128,20 +74,4 @@
         </div>
     {% endif %}
 </div>
-
-<script>
-VANTA.NET({
-    el: '#vantajs-bg',
-    mouseControls: true,
-    touchControls: true,
-    gyroControls: false,
-    scale: 1.00,
-    scaleMobile: 1.00,
-    color: 0xe6a029,
-    backgroundColor: 0x1a1a22,
-    points: 9.00,
-    spacing: 17.00
-})
-</script>
-</body>
-</html>
+{% endblock content %}

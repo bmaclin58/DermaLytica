@@ -1,7 +1,10 @@
 {% load static %}
+
 <meta charset="utf-8"/>
+
 <meta name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+      content="width=device-width, initial-scale=1"/>
+
 <link rel="icon"
       type="image/x-icon"
       href="{% static '/Photos/DermaLytica AI Logo.png' %}"/>
@@ -33,6 +36,11 @@
 
 <!-- Core JS / CSS-->
 <link href="{% static 'CSS/Dermalytica.css' %}" rel="stylesheet"/>
+<style>
+	body{
+		 background-image: url('{% static 'Photos/SiteBackground.png' %}');
+	}
+</style>
 
 <!-- Animated BG -->
 <script src= "{% static 'JS/three.r134.min.js' %}"></script>

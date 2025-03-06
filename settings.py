@@ -23,6 +23,8 @@ load_dotenv()
 SECRET_KEY = os.getenv("DJANGO_KEY")
 YELP_API_KEY = os.getenv("YELP_API_KEY")
 
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 # DEBUG = os.getenv("DEBUG") == "TRUE"
 DEBUG = True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

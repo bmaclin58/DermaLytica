@@ -1,17 +1,9 @@
+{% extends 'Components/baseDermaLytics.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>DermaLytica AI</title>
-	{% include 'Components/Derma head.html' %}
-</head>
-<body style="background-image: url('{% static 'Photos/SiteBackground.png' %}')">
+{% block content %}
 
-
-<div id="vantajs-bg" class="vantajs-bg"></div>
 <div class="container h-100 d-flex justify-content-center align-items-center"
      style="min-height: 100vh;">
 	<div class="row w-100">
@@ -34,20 +26,4 @@
 		</div>
 	</div>
 </div>
-
-<script>
-	VANTA.NET({
-		el: '#vantajs-bg',
-		mouseControls: true,
-		touchControls: true,
-		gyroControls: false,
-		scale: 1.00,
-		scaleMobile: 1.00,
-		color: 0xe6a029,
-		backgroundColor: 0x1a1a22,
-		points: 9.00,
-		spacing: 17.00
-	})
-</script>
-</body>
-</html>
+{% endblock content %}

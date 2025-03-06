@@ -4,7 +4,8 @@ from django.conf import settings
 
 
 def dermatologistLookup(zipCode) -> list:
-    url = f"https://api.yelp.com/v3/businesses/search?location={zipCode}&radius=20000&categories=Dermatologists&categories=dermatology&sort_by=best_match&limit=10"
+    url = f"https://api.yelp.com/v3/businesses/search?location={zipCode}&radius=20000&categories=Dermatologists&categories=dermatology&sort_by=best_match&limit=8"
+    print(url)
 
     headers = {
         "accept": "application/json",

@@ -55,6 +55,7 @@ def preprocess_image(image_data):
 	Preprocess an image for model input
 	"""
 	# Convert to RGB if needed
+	
 	if len(image_data.shape) == 2:  # If grayscale
 		image_data = cv2.cvtColor(image_data, cv2.COLOR_GRAY2RGB)
 	elif image_data.shape[2] == 4:  # If RGBA
@@ -65,6 +66,5 @@ def preprocess_image(image_data):
 
 	# Normalize pixel values
 	image_data = image_data.astype(np.float32) / 255.0
-	print(f'Image shape: {image_data.shape}')
 
 	return image_data

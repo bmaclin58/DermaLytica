@@ -1,0 +1,38 @@
+{% load crispy_forms_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>DermaLytica AI</title>
+	{% include 'Components/Derma head.html' %}
+</head>
+{% block extraCSS %}
+{% endblock extraCSS %}
+<body>
+<div id="vantajs-bg" class="vantajs-bg"></div>
+{% block content %}
+{% endblock content %}
+</body>
+<script>
+    // Add error handling to the Vanta.js initialization
+    try {
+        VANTA.NET({
+            el: '#vantajs-bg',
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0xe6a029,
+            backgroundColor: 0x1a1a22,
+            points: 9.00,
+            spacing: 17.00
+        });
+    } catch (error) {
+        console.error('Vanta.js failed to initialize:', error);
+        // The background image will show by default since it's set on the body
+    }
+</script>
+</html>

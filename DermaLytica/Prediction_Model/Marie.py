@@ -1,5 +1,6 @@
 import base64
 import io
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -17,6 +18,8 @@ model = None
 
 def get_model():
 	global model
+
+
 	if model is None:
 		try:
 			model = tf.lite.Interpreter(MODEL_PATH)
@@ -76,7 +79,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 			preprocessed_image = preprocess_image(image)
 			print(f"Image shape: {preprocessed_image.shape}")
 			mask = preprocess_image(mask)
-			print(f"Image shape: {mask.shape}")
+			print(f"Mask shape: {mask.shape}")
 
 		except Exception as e:
 			print(f'Error preprocessing image: {str(e)}')
@@ -93,7 +96,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 		mask_input = np.expand_dims(mask, axis=0).astype(np.float32)
 		metadata_input = np.expand_dims(metadata, axis=0).astype(np.float32)
 
-		# Set the model's inputs - CORRECTED ORDER based on input_details
+		# Set the model's inputs
 		model.set_tensor(input_details[0]['index'], mask_input)  # mask input
 		model.set_tensor(input_details[1]['index'], metadata_input)  # metadata input
 		model.set_tensor(input_details[2]['index'], image_input)  # image input
@@ -102,6 +105,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 		# Run inference
 		model.invoke()
 		print('Model invoked, Get output')
+
 		# Get the output
 		prediction = model.get_tensor(output_details[0]['index'])[0][0]
 
