@@ -6,7 +6,11 @@
 {% endblock extraCSS %}
 
 {% block content %}
-
+<div class="back-button">
+    <a href="{% url 'DermaAI-home' %}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-90deg-left"></i> Back
+    </a>
+</div>
 <div class="container d-flex flex-column justify-content-center" style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
     <!-- First Row: Results and Confidence -->
     <div class="row mb-4">
