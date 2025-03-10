@@ -28,7 +28,7 @@
 	</nav>
 
 	<div class="container h-100 d-flex justify-content-center align-items-center"
-	     style="max-height: 100vh; overflow: hidden;">
+	     style="height: 100vh;">
 
 		<div class="row w-100">
 			<div class="col-md-6 titleCard">
@@ -42,11 +42,12 @@
 						<form method="POST" action="{% url 'prediction' %}" enctype="multipart/form-data">
 							{% crispy form %}
 						</form>
-<div class="help-bubble form-help d-none">
+						<div class="help-bubble form-help d-none">
 							If you are using an Example Image, please enter the demographic data from above in
-							conjunction with the downloaded image. The Zip Code will need to be a US based Zip. If you
-							are using your own information, please enter all of your demographic data and image. The
-							"Body Location of Image" is where you took the photo of the skin lesion.
+							conjunction with the downloaded image. <br><br>
+							The Zip Code will need to be a US based Zip. <br><br>
+							If you are using your own information, please enter your own demographic data and image.<br><br>
+							The "Body Location of Image" is where you took the photo of the skin lesion.
 						</div>
 						<div class="mt-3 text-muted small text-center">
 							<p>Please note: None of your information will be saved after being submitted.</p>

@@ -110,7 +110,8 @@ body {
 }
 
 .vantajs-bg {
-    position: fixed; /* Changed from absolute to fixed */
+    position: fixed;
+    overflow: hidden;
     top: 0;
     left: 0;
     right: 0;
