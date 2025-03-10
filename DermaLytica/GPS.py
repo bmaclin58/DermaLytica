@@ -46,19 +46,3 @@ def dermatologistLookup(zipCode) -> list:
     except Exception as e:
         print(f"Error extracting data: {str(e)}")
         return []
-'''
-# Example usage
-try:
-    dermatologists = dermatologistLookup("23325")
-    for i, dermatologist in enumerate(dermatologists, 1):
-        print(f"Dermatologist {i}:")
-        print(f"Name: {dermatologist['name']}")
-        print(f"URL: {dermatologist['url']}")
-        print(f"Rating: {dermatologist['rating']}")
-        print(f"Address: {dermatologist['display_address']}")
-        print(f"Phone: {dermatologist['display_phone']}")
-        print(f"Distance: {dermatologist['distance']} miles")
-        print("-" * 50)
-except Exception as e:
-    print(f"Error running the example: {str(e)}")
-'''

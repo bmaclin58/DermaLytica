@@ -5,7 +5,6 @@ import os
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from django.http import JsonResponse
 
 from DermaLytica.GPS import dermatologistLookup
 from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THRESHOLD
@@ -24,7 +23,7 @@ def get_model():
 		try:
 			model = tf.lite.Interpreter(MODEL_PATH)
 			model.allocate_tensors()
-			print("TFLite Model loaded successfully")
+			#print("TFLite Model loaded successfully")
 		except Exception as e:
 			print(f"Error loading TFLite model: {e}")
 	return model

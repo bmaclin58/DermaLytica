@@ -45,7 +45,7 @@ def create_mask_otsu(image):
 
 	# Convert to a 3-channel image for the model
 	mask_3channel = cv2.cvtColor(mask_clean, cv2.COLOR_GRAY2RGB)
-	print(f'Mask shape')
+	#print(f'Mask shape')
 
 	return mask_3channel
 

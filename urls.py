@@ -22,8 +22,7 @@ from django.urls import path
 from DermaLytica.views import DermaLytica_HomeView, PredictionView
 
 urlpatterns = [
-	#path('admin/', admin.site.urls),
-	path('DermaLytica/', DermaLytica_HomeView.as_view(), name='DermaAI-home'),
+	path('', DermaLytica_HomeView.as_view(), name='DermaAI-home'),
 	path('prediction/', PredictionView.as_view(), name='prediction'),
 
 ]

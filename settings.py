@@ -25,8 +25,8 @@ YELP_API_KEY = os.getenv("YELP_API_KEY")
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-# DEBUG = os.getenv("DEBUG") == "TRUE"
-DEBUG = True
+DEBUG = False
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -132,11 +132,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/Files/"
 # MEDIA_ROOT = Path('D:/Files')
 
-STORAGES = {
-		"staticfiles": {
-				"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-		},
-}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
