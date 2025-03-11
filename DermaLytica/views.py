@@ -8,7 +8,7 @@ from DermaLytica.Prediction_Model.UtilityFunctions.ImageConvert import convert_t
 
 
 class DermaLytica_HomeView(FormView):
-    template_name = 'HomePage.html'
+    template_name = 'DermaHomePage.html'
     form_class = InputForm
 
     def get_form_action(self):
@@ -47,4 +47,4 @@ class PredictionView(TemplateView):
             return self.render_to_response(context)
 
         # If the form is invalid, return to the home page with errors
-        return render(request, "HomePage.html", {"form": form})
+        return render(request, "DermaHomePage.html", {"form": form})

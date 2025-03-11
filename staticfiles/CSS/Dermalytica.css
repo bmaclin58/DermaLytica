@@ -12641,3 +12641,6 @@ header.masthead h1, header.masthead .h1 {
     right: 95%;
     width: 300px;
 }
+.nav-item {
+    border: 1px solid black;
+}

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 		'django.contrib.messages',
 		'django.contrib.staticfiles',
 		'DermaLytica.apps.PredictionModelConfig',
+		'Home_Portfolio.apps.HomePortfolioConfig'
 ]
 
 MIDDLEWARE = [
@@ -130,8 +131,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/Files/"
-# MEDIA_ROOT = Path('D:/Files')
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
