@@ -31,7 +31,7 @@ DEBUG = False
 BASE_DIR = Path(__file__).resolve().parent
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
-
+SESSION_COOKIE_SECURE = True
 # Application definition
 
 INSTALLED_APPS = [
