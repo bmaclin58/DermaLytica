@@ -3,7 +3,6 @@ import io
 import os
 
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 
 from DermaLytica.GPS import dermatologistLookup
@@ -11,18 +10,21 @@ from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THR
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
-# Load the model on module import
-try:
-    model = tf.lite.Interpreter(MODEL_PATH)
-    model.allocate_tensors()
-    print("TFLite Model loaded successfully at startup")
-except Exception as e:
-    model = None
-    print(f"Error loading TFLite model at startup: {e}")
+# Global variable for model instance
+_model = None
 
 def get_model():
-    # Simply return the model loaded at import time
-    return model
+    """Lazy-load the model only when needed"""
+    global _model
+    if _model is None:
+        try:
+            import tensorflow as tf
+            _model = tf.lite.Interpreter(MODEL_PATH)
+            _model.allocate_tensors()
+            print("TFLite Model loaded successfully")
+        except Exception as e:
+            print(f"Error loading TFLite model: {e}")
+    return _model
 
 
 def get_io_details(model):
@@ -38,6 +40,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 	"""
 	API endpoint to predict if a skin lesion is benign or malignant
 	"""
+	import tensorflow as tf
 	model = get_model()
 	if model is None:
 		print('Model not loaded')
