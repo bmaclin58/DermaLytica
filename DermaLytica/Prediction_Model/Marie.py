@@ -11,22 +11,18 @@ from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THR
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
-# Global interpreter
-model = None
-
+# Load the model on module import
+try:
+    model = tf.lite.Interpreter(MODEL_PATH)
+    model.allocate_tensors()
+    print("TFLite Model loaded successfully at startup")
+except Exception as e:
+    model = None
+    print(f"Error loading TFLite model at startup: {e}")
 
 def get_model():
-	global model
-
-
-	if model is None:
-		try:
-			model = tf.lite.Interpreter(MODEL_PATH)
-			model.allocate_tensors()
-			#print("TFLite Model loaded successfully")
-		except Exception as e:
-			print(f"Error loading TFLite model: {e}")
-	return model
+    # Simply return the model loaded at import time
+    return model
 
 
 def get_io_details(model):
