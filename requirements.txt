@@ -86,6 +86,7 @@ sortedcontainers==2.4.0
 sqlparse==0.5.1
 sspilib==0.2.0
 tensorboard==2.18.0
+tensorflow-cpu==2.18.0
 tensorboard-data-server==0.7.2
 tensorflow==2.18.0
 tomli==2.0.1
