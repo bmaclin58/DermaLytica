@@ -26,16 +26,12 @@ YELP_API_KEY = os.getenv("YELP_API_KEY")
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-DEBUG = False
+DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
 
-ALLOWED_HOSTS = ['hirebrianmaclin.com', 'hirebrianmaclin.com/*', '0.0.0.0','localhost']
-
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+ALLOWED_HOSTS = ['hirebrianmaclin.com', 'hirebrianmaclin.com/*','127.0.0.1']
 
 SESSION_COOKIE_SECURE = True
 # Application definition
