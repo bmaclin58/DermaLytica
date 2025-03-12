@@ -14,6 +14,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DermaLytica.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
 application = get_asgi_application()
