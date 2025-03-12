@@ -1,0 +1,24 @@
+{% load static %}
+<!-- Animated BG -->
+<script src= "{% static 'JS/three.r134.min.js' %}"></script>
+<script src= "{% static 'JS/vanta.net.min.js' %}"></script>
+<script>
+    // Add error handling to the Vanta.js initialization
+    try {
+        VANTA.NET({
+            el: '#vantajs-bg',
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0xe6a029,
+            backgroundColor: 0x1a1a22,
+            points: 9.00,
+            spacing: 17.00
+        });
+    } catch (error) {
+        console.error('Vanta.js failed to initialize:', error);
+        // The background image will show by default since it's set on the body
+    }
+</script>
