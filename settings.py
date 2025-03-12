@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from google.cloud import secretmanager
 
 from dotenv import load_dotenv
 
@@ -21,15 +22,33 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("DJANGO_KEY")
-YELP_API_KEY = os.getenv("YELP_API_KEY")
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent
+
+
+def get_secret(secret_name):
+	"""Fetches a secret value from GCP Secret Manager."""
+	project_id = "143642567909"  # Replace with your actual GCP project ID
+	client = secretmanager.SecretManagerServiceClient()
+
+	name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+
+	try:
+		response = client.access_secret_version(name=name)
+		return response.payload.data.decode("UTF-8")
+	except Exception as e:
+		print(f"Error retrieving secret {secret_name}: {e}")
+		return None  # Ensure application doesn't crash
+
+# Fetch secrets
+SECRET_KEY = get_secret("djangoSettings")
+YELP_API_KEY = get_secret("YELP_API_KEY")
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-DEBUG = True
+DEBUG = False
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent
+
 
 ALLOWED_HOSTS = ['hirebrianmaclin.com', 'hirebrianmaclin.com/*','127.0.0.1']
 
