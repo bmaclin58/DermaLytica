@@ -50,5 +50,3 @@ COPY . /app/
 
 # Expose port 8000
 EXPOSE 8000
-
-# The command will be provided by docker-compose.yml
