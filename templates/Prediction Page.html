@@ -1,10 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Title</title>
-</head>
-<body>
+{% extends 'Components/baseDermaLytics.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block extraCSS %}
+{% include 'Components/PredictionPageCSS.html' %}
+{% endblock extraCSS %}
+
+{% block content %}
+<div class="back-button">
+    <a href="{% url 'DermaAI-home' %}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-90deg-left"></i> Back
+    </a>
+</div>
+<div class="container d-flex flex-column justify-content-center" style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
+    <!-- First Row: Results and Confidence -->
+    <div class="row mb-4">
+        <!-- Result Card -->
+        <div class="col-md-6 my-auto">
+            <div class="result-card">
+                {% if prediction == 'Benign' %}
+                    <div class="result-heading text-success text-center">You Appear CLEAR!</div>
+                    <div class="result-message">
+                        Our analysis indicates that your skin lesion appears benign. Continue monitoring for any changes.
+                    </div>
+                {% else %}
+                    <div class="result-heading text-danger text-center">You should get that looked at</div>
+                    <div class="result-message">
+                        Our analysis suggests this lesion might be malignant. We recommend consulting with a dermatologist as soon as possible.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Confidence Score Card -->
+        <div class="col-md-6 my-auto">
+            <div class="confidence-box {% if prediction == 'Benign' %}benign-result{% else %}malignant-result{% endif %}">
+                Confidence: {{ confidence|floatformat:2 }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Dermatologist List (Only shown if malignant) -->
+    {% if prediction != 'Benign' and dermatology_Lists %}
+        <div class="row">
+            <div class="col-12">
+                <div class="result-card">
+                    <h3>Dermatologists Near You</h3>
+                    <p>Here are some dermatologists in your area who can provide professional evaluation:</p>
+
+                    <div class="table-responsive">
+                        <table class="dermatologist-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Rating</th>
+                                    <th>Address</th>
+                                    <th>Phone</th>
+                                    <th>Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dermatologist in dermatology_Lists %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ dermatologist.url }}" target="_blank">{{ dermatologist.name }}</a>
+                                        </td>
+                                        <td>{{ dermatologist.rating }} ★</td>
+                                        <td>{{ dermatologist.display_address }}</td>
+                                        <td>{{ dermatologist.display_phone }}</td>
+                                        <td>{{ dermatologist.distance|floatformat:1 }} miles</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

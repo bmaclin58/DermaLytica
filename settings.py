@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # ------------------------------------------------------------------------
@@ -20,24 +21,31 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SECRET_KEY = os.getenv("DJANGO_KEY")
-DEBUG = os.getenv("DEBUG") == "FALSE"
+YELP_API_KEY = os.getenv("YELP_API_KEY")
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+DEBUG = False
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+SESSION_COOKIE_SECURE = True
 # Application definition
 
 INSTALLED_APPS = [
 		'whitenoise.runserver_nostatic',
+		'crispy_forms',
+		"crispy_bootstrap5",
 		'django.contrib.admin',
 		'django.contrib.auth',
 		'django.contrib.contenttypes',
 		'django.contrib.sessions',
 		'django.contrib.messages',
 		'django.contrib.staticfiles',
-		'Prediction_Model.apps.PredictionModelConfig'
+		'DermaLytica.apps.PredictionModelConfig',
+		'Home_Portfolio.apps.HomePortfolioConfig'
 ]
 
 MIDDLEWARE = [
@@ -56,7 +64,7 @@ ROOT_URLCONF = 'urls'
 TEMPLATES = [
 		{
 				'BACKEND':  'django.template.backends.django.DjangoTemplates',
-				'DIRS':     [],
+				'DIRS':     [BASE_DIR / 'templates'],
 				'APP_DIRS': True,
 				'OPTIONS':  {
 						'context_processors': [
@@ -69,7 +77,10 @@ TEMPLATES = [
 		},
 ]
 
-WSGI_APPLICATION = 'DermaLytica.wsgi.application'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -104,16 +115,22 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+# ------------------------------------------------------------------------
+#          Static / Media files (CSS, JavaScript, Images, Docs)
+#        https://docs.djangoproject.com/en/5.1/howto/static-files/
+# ------------------------------------------------------------------------
 
-STATIC_URL = 'static/'
+STATIC_URL = "/staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+MEDIA_URL = "/Files/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
