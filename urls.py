@@ -22,11 +22,11 @@ from DermaLytica.views import DermaLytica_HomeView, PredictionView
 from Home_Portfolio.views import portfolioHome
 
 urlpatterns = [
-		path('', portfolioHome.as_view(), name='portfolio-Home'),
-		path('DermaLytica/', DermaLytica_HomeView.as_view(), name='DermaAI-home'),
-		path('prediction/', PredictionView.as_view(), name='prediction'),
+		path('', portfolioHome.as_view(), name = 'portfolio-Home'),
+		path('DermaLytica/', DermaLytica_HomeView.as_view(), name = 'DermaAI-home'),
+		path('prediction/', PredictionView.as_view(), name = 'prediction'),
 
-]
+		]
 
 if settings.DEBUG:
-	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+	urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

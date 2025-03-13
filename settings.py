@@ -17,7 +17,6 @@ from dotenv import load_dotenv
 # ------------------------------------------------------------------------
 #                 .Env Secret Variables / Path Building
 # ------------------------------------------------------------------------
-
 load_dotenv()
 
 SECRET_KEY = os.getenv("DJANGO_KEY")
@@ -25,7 +24,7 @@ YELP_API_KEY = os.getenv("YELP_API_KEY")
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-DEBUG = False
+DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
@@ -44,7 +43,7 @@ INSTALLED_APPS = [
 		'django.contrib.sessions',
 		'django.contrib.messages',
 		'django.contrib.staticfiles',
-		'DermaLytica.apps.PredictionModelConfig',
+		'DermaLytica.apps.DermaLyticaConfig',
 		'Home_Portfolio.apps.HomePortfolioConfig'
 ]
 
@@ -85,12 +84,7 @@ WSGI_APPLICATION = 'wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-		'default': {
-				'ENGINE': 'django.db.backends.sqlite3',
-				'NAME':   BASE_DIR / 'db.sqlite3',
-		}
-}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -127,7 +121,7 @@ USE_TZ = True
 # ------------------------------------------------------------------------
 
 STATIC_URL = "/staticfiles/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/Files/"

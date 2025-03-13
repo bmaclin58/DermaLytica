@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import FormView, TemplateView
 
@@ -8,43 +8,43 @@ from DermaLytica.Prediction_Model.UtilityFunctions.ImageConvert import convert_t
 
 
 class DermaLytica_HomeView(FormView):
-    template_name = 'DermaHomePage.html'
-    form_class = InputForm
+	template_name = 'DermaHomePage.html'
+	form_class = InputForm
 
-    def get_form_action(self):
-	    """ Change the form action to submit to 'prediction' view instead of itself """
-	    return reverse('prediction')
+	def get_form_action(self):
+		""" Change the form action to submit to 'prediction' view instead of itself """
+		return reverse('prediction')
 
 
 class PredictionView(TemplateView):
-    template_name = 'Prediction Page.html'
+	template_name = 'Prediction Page.html'
 
-    def post(self, request, *args, **kwargs):
-        form = InputForm(request.POST, request.FILES)  # Get form data
+	def post(self, request, *args, **kwargs):
+		form = InputForm(request.POST, request.FILES)  # Get form data
 
-        if form.is_valid():
-            instance = form.save(commit=False)
+		if form.is_valid():
+			instance = form.save(commit = False)
 
-            image = instance.image
-            age = instance.age
-            gender = instance.gender
-            location = instance.location
-            zipCode = instance.zipCode
+			image = instance.image
+			age = instance.age
+			gender = instance.gender
+			location = instance.location
+			zipCode = instance.zipCode
 
-            if not image.name.lower().endswith(('.jpg', '.jpeg')):
-                image = convert_to_jpg(image)
-                instance.image = image
+			if not image.name.lower().endswith(('.jpg', '.jpeg')):
+				image = convert_to_jpg(image)
+				instance.image = image
 
-            # Make prediction
-            prediction_results = predict_lesion(image, age, gender, location, zipCode)
+			# Make prediction
+			prediction_results = predict_lesion(image, age, gender, location, zipCode)
 
-            # Pass the results to the template
-            context = {
-                "prediction": prediction_results.get("classification"),
-                "confidence": prediction_results.get("confidence"),
-                "dermatology_Lists": prediction_results.get("dermatology_Lists", []),
-            }
-            return self.render_to_response(context)
+			# Pass the results to the template
+			context = {
+					"prediction":        prediction_results.get("classification"),
+					"confidence":        prediction_results.get("confidence"),
+					"dermatology_Lists": prediction_results.get("dermatology_Lists", []),
+					}
+			return self.render_to_response(context)
 
-        # If the form is invalid, return to the home page with errors
-        return render(request, "DermaHomePage.html", {"form": form})
+		# If the form is invalid, return to the home page with errors
+		return render(request, "DermaHomePage.html", {"form": form})
