@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxrender1 \
     libxext6 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -48,6 +49,11 @@ COPY --from=builder /usr/local /usr/local
 
 # Copy application source code
 COPY . /app/
+
+# Download the model file
+RUN mkdir -p DermaLytica/Prediction_Model/AI_Models && \
+    curl -o DermaLytica/Prediction_Model/AI_Models/KERAS_model.tflite \
+    https://storage.googleapis.com/dermalyticsdrive/models/KERAS_model.tflite
 
 # Expose Cloud Run's required port
 EXPOSE 8080
