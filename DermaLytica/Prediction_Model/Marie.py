@@ -3,7 +3,6 @@ import io
 import os
 
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 
 from DermaLytica.GPS import dermatologistLookup
@@ -11,20 +10,23 @@ from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THR
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
-# Global interpreter
-model = None
-
+# Global variable for model instance
+_model = None
 
 def get_model():
-	global model
-	if model is None:
-		try:
-			model = tf.lite.Interpreter(MODEL_PATH)
-			model.allocate_tensors()
-			#print("TFLite Model loaded successfully")
-		except Exception as e:
-			print(f"Error loading TFLite model: {e}")
-	return model
+    """Lazy-load the model only when needed"""
+    global _model
+    if _model is None:
+        try:
+            import tensorflow as tf
+            tf.config.set_visible_devices([], 'GPU')
+            _model = tf.lite.Interpreter(model_path=MODEL_PATH)
+            _model.allocate_tensors()
+            print("TFLite Model loaded successfully")
+        except Exception as e:
+            print(f"Error loading TFLite model: {e}")
+    return _model
+
 
 
 def get_io_details(model):

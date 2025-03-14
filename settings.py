@@ -57,7 +57,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-SESSION_COOKIE_SECURE = True
+
 # Application definition
 
 INSTALLED_APPS = [
