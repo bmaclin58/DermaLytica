@@ -52,7 +52,7 @@ else:
 	SECRET_KEY = get_secret("djangoSettings")
 	YELP_API_KEY = get_secret("YELP_API_KEY")
 
-# Fetch secrets
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 DEBUG = True
