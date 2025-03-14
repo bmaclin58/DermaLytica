@@ -45,7 +45,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','hirebrianmaclin.com','https://dermalytica-143642567909.us-central1.run.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','hirebrianmaclin.com','dermalytica-143642567909.us-central1.run.app']
 SESSION_COOKIE_SECURE = True
 # Application definition
 
