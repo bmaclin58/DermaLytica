@@ -54,7 +54,7 @@ else:
 # Fetch secrets
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
