@@ -15,8 +15,6 @@ def dermatologistLookup(zipCode) -> list:
         "accept": "application/json",
         "authorization": f"Bearer {YELP_API_KEY}"
         }
-    print(settings.YELP_API_KEY)
-    print(headers["authorization"])
 
     response = requests.get(url, headers=headers)
 
