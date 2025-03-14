@@ -29,6 +29,7 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
 
 # Install OpenCV system dependencies
 RUN apt-get update && apt-get install -y \
@@ -48,5 +49,8 @@ COPY --from=builder /usr/local /usr/local
 # Copy application source code
 COPY . /app/
 
-# Expose port 8000
-EXPOSE 8000
+# Expose Cloud Run's required port
+EXPOSE 8080
+
+# Use gunicorn to start the app on the required port
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "wsgi:application"]

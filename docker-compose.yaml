@@ -6,9 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     env_file:
       - .env
     volumes:
       - .:/app
-    command: gunicorn --bind 0.0.0.0:8000 wsgi:application
+    command: gunicorn --bind 0.0.0.0:8080 wsgi:application
