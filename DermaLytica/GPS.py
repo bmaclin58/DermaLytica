@@ -2,16 +2,22 @@ import requests
 import json
 from django.conf import settings
 
+from settings import YELP_API_KEY, get_secret
+
 
 def dermatologistLookup(zipCode) -> list:
     url = f"https://api.yelp.com/v3/businesses/search?location={zipCode}&radius=20000&categories=Dermatologists&categories=dermatology&sort_by=best_match&limit=8"
     print(url)
 
+    YELP_API_KEY = get_secret("YELP_API_KEY")
+
     headers = {
         "accept": "application/json",
-        "authorization": settings.YELP_API_KEY
+        "authorization": f"Bearer {YELP_API_KEY}"
         }
     print(settings.YELP_API_KEY)
+    print(headers["authorization"])
+
     response = requests.get(url, headers=headers)
 
     try:

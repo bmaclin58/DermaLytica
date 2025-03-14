@@ -112,7 +112,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 		is_malignant = prediction >= OPTIMAL_THRESHOLD
 		print(f'Prediction: {prediction}, Threshold: {OPTIMAL_THRESHOLD}, Malignant: {is_malignant}')
 		dermatology_Lists = None
-
+		print(f'Zip Code: {zipCode}')
 		if is_malignant and zipCode:
 			dermatology_Lists = dermatologistLookup(zipCode)
 
