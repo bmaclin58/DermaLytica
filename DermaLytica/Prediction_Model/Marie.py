@@ -1,12 +1,11 @@
 import base64
 import io
-import os
 
 import numpy as np
 from PIL import Image
 
 from DermaLytica.GPS import dermatologistLookup
-from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THRESHOLD
+from DermaLytica.Prediction_Model.GlobalVariables import OPTIMAL_THRESHOLD, downloadModel
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
@@ -14,19 +13,20 @@ from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_m
 _model = None
 
 def get_model():
-    """Lazy-load the model only when needed"""
-    global _model
-    if _model is None:
-        try:
-            import tensorflow as tf
-            tf.config.set_visible_devices([], 'GPU')
-            _model = tf.lite.Interpreter(model_path=MODEL_PATH)
-            _model.allocate_tensors()
-            print("TFLite Model loaded successfully")
-        except Exception as e:
-            print(f"Error loading TFLite model: {e}")
-    return _model
+	"""Lazy-load the model only when needed"""
+	global _model
 
+	if _model is None:
+		try:
+			MODEL_PATH = downloadModel()
+			import tensorflow as tf
+			tf.config.set_visible_devices([], 'GPU')
+			_model = tf.lite.Interpreter(model_path = MODEL_PATH)
+			_model.allocate_tensors()
+			print("TFLite Model loaded successfully")
+		except Exception as e:
+			print(f"Error loading TFLite model: {e}")
+	return _model
 
 
 def get_io_details(model):
@@ -91,9 +91,9 @@ def predict_lesion(image, age, gender, location, zipCode):
 		input_details, output_details = get_io_details(model)
 
 		# Prepare inputs in expected format
-		image_input = np.expand_dims(preprocessed_image, axis=0).astype(np.float32)
-		mask_input = np.expand_dims(mask, axis=0).astype(np.float32)
-		metadata_input = np.expand_dims(metadata, axis=0).astype(np.float32)
+		image_input = np.expand_dims(preprocessed_image, axis = 0).astype(np.float32)
+		mask_input = np.expand_dims(mask, axis = 0).astype(np.float32)
+		metadata_input = np.expand_dims(metadata, axis = 0).astype(np.float32)
 
 		# Set the model's inputs
 		model.set_tensor(input_details[0]['index'], mask_input)  # mask input
@@ -124,7 +124,7 @@ def predict_lesion(image, age, gender, location, zipCode):
 				'classification':    'Malignant' if is_malignant else 'Benign',
 				'confidence':        float(prediction if is_malignant else 1 - prediction) * 100,
 				'dermatology_Lists': dermatology_Lists
-		}
+				}
 		for key, value in response.items():
 			print(f'{key}: {value}')
 
