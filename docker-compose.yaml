@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   web:
+    image: bmaclin58/personal-portfolio
     build:
       context: .
       dockerfile: Dockerfile
