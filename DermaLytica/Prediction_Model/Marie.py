@@ -3,6 +3,7 @@ import io
 import os
 
 import numpy as np
+import tensorflow as tf
 from PIL import Image
 
 from DermaLytica.GPS import dermatologistLookup
@@ -10,22 +11,20 @@ from DermaLytica.Prediction_Model.GlobalVariables import MODEL_PATH, OPTIMAL_THR
 from DermaLytica.Prediction_Model.UtilityFunctions.ImageProcessing import create_mask_otsu, preprocess_image
 from DermaLytica.Prediction_Model.UtilityFunctions.PrepMetadata import prepare_metadata
 
-# Global variable for model instance
-_model = None
+# Global interpreter
+model = None
+
 
 def get_model():
-    """Lazy-load the model only when needed"""
-    global _model
-    if _model is None:
-        try:
-            import tensorflow as tf
-            tf.config.set_visible_devices([], 'GPU')
-            _model = tf.lite.Interpreter(model_path=MODEL_PATH)
-            _model.allocate_tensors()
-            print("TFLite Model loaded successfully")
-        except Exception as e:
-            print(f"Error loading TFLite model: {e}")
-    return _model
+	global model
+	if model is None:
+		try:
+			model = tf.lite.Interpreter(MODEL_PATH)
+			model.allocate_tensors()
+			#print("TFLite Model loaded successfully")
+		except Exception as e:
+			print(f"Error loading TFLite model: {e}")
+	return model
 
 
 def get_io_details(model):
@@ -51,12 +50,8 @@ def predict_lesion(image, age, gender, location, zipCode):
 		try:
 			# If image is a Django ImageFieldFile
 			if hasattr(image, 'read'):
-				try:
-					image_data = image.read()
-					image = np.array(Image.open(io.BytesIO(image_data)).convert("RGB"))  # Ensure RGB format
-				except Exception as e:
-					print(f"Error processing uploaded image: {e}")
-					return {"classification": "Error", "confidence": 0, "dermatology_Lists": []}
+				image_data = image.read()
+				image = np.array(Image.open(io.BytesIO(image_data)))
 			# If image is a base64 string
 			elif isinstance(image, str):
 				if ',' in image:
@@ -99,13 +94,9 @@ def predict_lesion(image, age, gender, location, zipCode):
 		metadata_input = np.expand_dims(metadata, axis=0).astype(np.float32)
 
 		# Set the model's inputs
-		input_details = {detail['name']: detail for detail in model.get_input_details()}
-		if 'mask_input' in input_details:
-			model.set_tensor(input_details['mask_input']['index'], mask_input)
-		if 'metadata_input' in input_details:
-			model.set_tensor(input_details['metadata_input']['index'], metadata_input)
-		if 'image_input' in input_details:
-			model.set_tensor(input_details['image_input']['index'], image_input)
+		model.set_tensor(input_details[0]['index'], mask_input)  # mask input
+		model.set_tensor(input_details[1]['index'], metadata_input)  # metadata input
+		model.set_tensor(input_details[2]['index'], image_input)  # image input
 
 		print('Inputs set, Invoke model')
 		# Run inference

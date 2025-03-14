@@ -11,19 +11,20 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
-from google.cloud import secretmanager
+
 from dotenv import load_dotenv
+
 
 # ------------------------------------------------------------------------
 #                 .Env Secret Variables / Path Building
 # ------------------------------------------------------------------------
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
 
 
 def get_secret(secret_name):
+	from google.cloud import secretmanager
 	"""Fetches a secret value from GCP Secret Manager."""
 	project_id = "143642567909"  # Replace with your actual GCP project ID
 	client = secretmanager.SecretManagerServiceClient()
@@ -31,21 +32,31 @@ def get_secret(secret_name):
 	name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
 
 	try:
-		response = client.access_secret_version(name=name)
+		response = client.access_secret_version(name = name)
 		return response.payload.data.decode("UTF-8")
 	except Exception as e:
 		print(f"Error retrieving secret {secret_name}: {e}")
 		return None  # Ensure application doesn't crash
 
-# Fetch secrets
-SECRET_KEY = get_secret("djangoSettings")
-YELP_API_KEY = get_secret("YELP_API_KEY")
+env_file = os.path.join(BASE_DIR, ".env")
 
+if os.path.isfile(env_file):
+	# Use a local secret file, if provided
+	load_dotenv()
+	SECRET_KEY = os.getenv("DJANGO_KEY")
+	YELP_API_KEY = os.getenv("YELP_API_KEY")
+
+else:
+	# Pull secrets from Secret Manager
+	SECRET_KEY = get_secret("djangoSettings")
+	YELP_API_KEY = get_secret("YELP_API_KEY")
+
+# Fetch secrets
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','hirebrianmaclin.com','dermalytica-143642567909.us-central1.run.app']
+ALLOWED_HOSTS = ['*']
 SESSION_COOKIE_SECURE = True
 # Application definition
 
@@ -61,7 +72,7 @@ INSTALLED_APPS = [
 		'django.contrib.staticfiles',
 		'DermaLytica.apps.DermaLyticaConfig',
 		'Home_Portfolio.apps.HomePortfolioConfig'
-]
+		]
 
 MIDDLEWARE = [
 		'django.middleware.security.SecurityMiddleware',
@@ -72,7 +83,7 @@ MIDDLEWARE = [
 		'django.contrib.auth.middleware.AuthenticationMiddleware',
 		'django.contrib.messages.middleware.MessageMiddleware',
 		'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+		]
 
 ROOT_URLCONF = 'urls'
 
@@ -87,10 +98,10 @@ TEMPLATES = [
 								'django.template.context_processors.request',
 								'django.contrib.auth.context_processors.auth',
 								'django.contrib.messages.context_processors.messages',
-						],
+								],
+						},
 				},
-		},
-]
+		]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -101,24 +112,23 @@ WSGI_APPLICATION = 'wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
 		{
 				'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-		},
+				},
 		{
 				'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-		},
+				},
 		{
 				'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-		},
+				},
 		{
 				'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-		},
-]
+				},
+		]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
