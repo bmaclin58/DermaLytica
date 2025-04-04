@@ -1,4 +1,5 @@
 import json
+
 import requests
 
 from settings import get_secret
@@ -17,8 +18,7 @@ def dermatologistLookup(zipCode) -> list:
 		   list if no results are found or an error occurs.
 	   """
 	MAPS_API_KEY = get_secret("MAPS_API_KEY")
-	safe_key = MAPS_API_KEY[:4] + "*" * (len(MAPS_API_KEY) - 8) + MAPS_API_KEY[-4:]
-	print(f"Using : {safe_key}")
+
 	if not MAPS_API_KEY:
 		print("API Key not configured. Cannot perform search.")
 		return []
@@ -38,16 +38,12 @@ def dermatologistLookup(zipCode) -> list:
 			'textQuery':    f'Dermatologists in {zipCode}',
 			'includedType': 'doctor'
 	}
-	print(f"Endpoint URL: {endpoint_url}")
-	print(f"Request headers: {dict(filter(lambda item: item[0] != 'X-Goog-Api-Key', headers.items()))}")
-	print(f"Request body: {data}")
 	# --- Make API Request ---
 	results = []
 	try:
 		response = requests.post(endpoint_url, json=data, headers=headers, timeout=25)
 		response.raise_for_status()  # Raise an exception for bad status codes
-		print(f"Response status code: {response.status_code}")
-		print(f"Response headers: {response.headers}")
+
 		if response.status_code != 200:
 			try:
 				error_content = response.json()
@@ -72,7 +68,7 @@ def dermatologistLookup(zipCode) -> list:
 				error_data = response.json()
 				if 'error' in error_data:
 					print(
-						f"Google API error details: {error_data['error'].get('message', 'No details provided')}")
+							f"Google API error details: {error_data['error'].get('message', 'No details provided')}")
 					print(f"Error code: {error_data['error'].get('code', 'Unknown')}")
 					if 'details' in error_data['error']:
 						for detail in error_data['error']['details']:
@@ -83,7 +79,7 @@ def dermatologistLookup(zipCode) -> list:
 			return []
 
 		data = response.json()
-		print((f"API response structure: {list(data.keys())}"))
+
 		# Check if we have places in the response
 		if 'places' in data:
 			# Extract information for each place found
@@ -108,37 +104,28 @@ def dermatologistLookup(zipCode) -> list:
 		print(f"Network error during Google Places API request: {e}")
 
 		# Enhanced request exception handling
-
 		if isinstance(e, requests.exceptions.SSLError):
-
 			print("SSL Error: This could indicate certificate issues or network security configuration problems")
 
 		elif isinstance(e, requests.exceptions.ConnectionError):
-
 			print("Connection Error: Check network connectivity or possible outage of the Google API service")
 
 		elif isinstance(e, requests.exceptions.Timeout):
-
 			print("Timeout Error: The request took too long to complete")
 
 		return []
 
 	except json.JSONDecodeError as json_err:
-
 		print(f"Error decoding JSON response from Google Places API: {json_err}")
-
 		print(f"Response content that couldn't be parsed: {response.text[:200]}...")
 
 		return []
 
 	except Exception as e:
-
 		# Catch any other unexpected errors during processing
-
 		print(f"An unexpected error occurred: {e}")
 
 		import traceback
-
 		print(f"Traceback: {traceback.format_exc()}")
 
 		return []
