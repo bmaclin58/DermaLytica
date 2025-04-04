@@ -45,12 +45,12 @@ if os.path.isfile(env_file):
 	# Use a local secret file, if provided
 	load_dotenv()
 	SECRET_KEY = os.getenv("DJANGO_KEY")
-	YELP_API_KEY = os.getenv("YELP_API_KEY")
+	MAPS_API_KEY = os.getenv("MAPS_API_KEY")
 
 else:
 	# Pull secrets from Secret Manager
 	SECRET_KEY = get_secret("djangoSettings")
-	YELP_API_KEY = get_secret("YELP_API_KEY")
+	MAPS_API_KEY = get_secret("MAPS_API_KEY")
 
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
