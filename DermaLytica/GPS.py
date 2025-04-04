@@ -90,7 +90,7 @@ def dermatologistLookup(zipCode) -> list:
 						'display_address': place.get('formattedAddress', 'N/A'),
 						'rating':          formattedRatings,
 						'display_phone':   place.get('nationalPhoneNumber', 'N/A'),
-						'url':             place.get('websiteUri', 'N/A'),
+						'url':             place.get('websiteUri', '#'),
 				}
 				results.append(business_info)
 		else:

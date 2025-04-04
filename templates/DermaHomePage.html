@@ -41,6 +41,13 @@
 					<div class="card-body">
 						<form method="POST" action="{% url 'prediction' %}" enctype="multipart/form-data">
 							{% crispy form %}
+							<div id="loadingIndicator" class="text-center mt-3 d-none">
+								<div class="spinner-border text-primary" role="status">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+								<p class="mt-2">Your image is being analyzed. Please wait...</p>
+							</div>
+
 						</form>
 						<div class="help-bubble form-help d-none">
 							If you are using an Example Image, please enter the demographic data from above in
@@ -84,6 +91,23 @@
 				});
 				cardBody.addEventListener('mouseleave', function () {
 					formHelp.classList.add('d-none');
+				});
+			}
+
+			// Handle form submission
+			const analysisForm = document.getElementById('analysisForm');
+			const loadingIndicator = document.getElementById('loadingIndicator');
+
+			if (analysisForm) {
+				analysisForm.addEventListener('submit', function () {
+					// Show loading indicator
+					loadingIndicator.classList.remove('d-none');
+
+					const submitButton = analysisForm.querySelector('button[type="submit"]');
+					if (submitButton) {
+						submitButton.disabled = true;
+						submitButton.textContent = 'Processing...';
+					}
 				});
 			}
 		});
