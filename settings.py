@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent
 def get_secret(secret_name):
 	from google.cloud import secretmanager
 	"""Fetches a secret value from GCP Secret Manager."""
-	project_id = "143642567909"  # Replace with your actual GCP project ID
+	project_id = "143642567909"
 	client = secretmanager.SecretManagerServiceClient()
 
 	name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
@@ -109,7 +109,7 @@ TEMPLATES = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-WSGI_APPLICATION = 'wsgi.application'
+#WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

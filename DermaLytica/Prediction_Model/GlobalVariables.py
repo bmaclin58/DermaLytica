@@ -1,7 +1,6 @@
 def downloadModel():
     import os
     import requests
-    import hashlib
     from django.conf import settings
 
     MODEL_URL = "https://storage.googleapis.com/dermalyticsdrive/models/KERAS_model.tflite"
@@ -17,11 +16,10 @@ def downloadModel():
         download_needed = True
         print(f"Model file does not exist at {MODEL_PATH}")
     else:
-        # Optional: Check file size or integrity
+        # Check file size or integrity
         try:
-            # If you know the expected file size
             file_size = os.path.getsize(MODEL_PATH)
-            if file_size < 1000:  # Arbitrary small size check
+            if file_size < 1000:
                 print(f"Model file seems too small ({file_size} bytes), redownloading...")
                 download_needed = True
         except Exception as e:

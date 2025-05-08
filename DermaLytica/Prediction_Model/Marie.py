@@ -20,7 +20,7 @@ def get_model():
 		try:
 			MODEL_PATH = downloadModel()
 			import tensorflow as tf
-			tf.config.set_visible_devices([], 'GPU')
+			tf.config.set_visible_devices([], 'CPU')
 			_model = tf.lite.Interpreter(model_path = MODEL_PATH)
 			_model.allocate_tensors()
 			print("TFLite Model loaded successfully")
