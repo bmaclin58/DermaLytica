@@ -260,7 +260,7 @@ header .banner {
 
 /* Footer */
 footer {
-    background: url("http://i1378.photobucket.com/albums/ah89/andreykokhanevich/portfolio%20page/footer-bg_zps1imhqalh.jpg");
+    background: url("/staticfiles/Photos/SiteBackground.png") no-repeat top;
     background-size: cover;
     color: var(--light-text);
     padding: 3rem 0;
