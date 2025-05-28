@@ -117,7 +117,7 @@ tensorboard==2.18.0
 tensorboard-data-server==0.7.2
 tensorflow==2.18.0
 tensorflow-io-gcs-filesystem==0.31.0
-tensorflow_intel==2.18.0
+tensorflow_intel
 termcolor==2.5.0
 tomli==2.0.1
 traitlets==5.14.3
