@@ -1,7 +1,7 @@
 # -------------------------------
 # Stage 1: Build dependencies
 # -------------------------------
-FROM python:3.11-slim AS builder
+FROM python:3.11.4-slim AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,7 +24,7 @@ RUN pip install --upgrade pip wheel setuptools \
 # -------------------------------
 # Stage 2: Final application image
 # -------------------------------
-FROM python:3.11-slim
+FROM python:3.11.4-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
