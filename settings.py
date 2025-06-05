@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent
 def get_secret(secret_name):
 	from google.cloud import secretmanager
 	"""Fetches a secret value from GCP Secret Manager."""
-	project_id = "143642567909"
+	project_id = "914836938844"
 	client = secretmanager.SecretManagerServiceClient()
 
 	name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
@@ -57,8 +57,8 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['dermalytica-143642567909.us-central1.run.app', 'hirebrianmaclin.com']
-CSRF_TRUSTED_ORIGINS = ['dermalytica-143642567909.us-central1.run.app','hirebrianmaclin.com']
+ALLOWED_HOSTS = ['hire-brian-maclin-914836938844.us-central1.run.app', 'hirebrianmaclin.com']
+CSRF_TRUSTED_ORIGINS = ['hire-brian-maclin-914836938844.us-central1.run.app','hirebrianmaclin.com']
 
 
 # Application definition
