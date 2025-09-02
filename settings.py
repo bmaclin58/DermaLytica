@@ -58,7 +58,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 DEBUG = False
 
 ALLOWED_HOSTS = ['dermalytica-143642567909.us-central1.run.app', 'hirebrianmaclin.com']
-CSRF_TRUSTED_ORIGINS = ['dermalytica-143642567909.us-central1.run.app','hirebrianmaclin.com']
+CSRF_TRUSTED_ORIGINS = ['dermalytica-143642567909.us-central1.run.app','hirebrianmaclin.com','*.hirebrianmaclin.com']
 
 
 # Application definition
