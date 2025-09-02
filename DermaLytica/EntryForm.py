@@ -26,7 +26,7 @@ class InputForm(forms.ModelForm):
 		self.fields['location'].label = "Body Location of Image"
 
 		self.helper.form_tag = False
-		self.helper.disable_csrf = True
+		# self.helper.disable_csrf = True
 		self.helper.layout = Layout(
 				Div(
 						Column('gender', css_class='form-group col-6'),
