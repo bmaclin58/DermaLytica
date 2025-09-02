@@ -58,7 +58,11 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 DEBUG = False
 
 ALLOWED_HOSTS = ['dermalytica-143642567909.us-central1.run.app', 'hirebrianmaclin.com']
-CSRF_TRUSTED_ORIGINS = ['dermalytica-143642567909.us-central1.run.app','hirebrianmaclin.com','*.hirebrianmaclin.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://dermalytica-143642567909.us-central1.run.app',
+    'https://hirebrianmaclin.com',
+    'https://*.hirebrianmaclin.com'
+]
 
 
 # Application definition
@@ -82,7 +86,7 @@ MIDDLEWARE = [
 		'whitenoise.middleware.WhiteNoiseMiddleware',
 		'django.contrib.sessions.middleware.SessionMiddleware',
 		'django.middleware.common.CommonMiddleware',
-		#'django.middleware.csrf.CsrfViewMiddleware',
+		'django.middleware.csrf.CsrfViewMiddleware',
 		'django.contrib.auth.middleware.AuthenticationMiddleware',
 		'django.contrib.messages.middleware.MessageMiddleware',
 		'django.middleware.clickjacking.XFrameOptionsMiddleware',
