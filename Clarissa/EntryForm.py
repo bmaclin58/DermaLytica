@@ -9,7 +9,7 @@ from Clarissa.models import mriData
 class MRIInputForm(forms.ModelForm):
 	class Meta:
 		model = mriData
-		fields = ('image')
+		fields = ('image',)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
