@@ -7,17 +7,18 @@
 	     style="height: 100vh;">
 
 		<div class="row w-100">
-			<div class="col-md-6 titleCard">
-				<img src="{% static 'Photos/BullyFilter.png' %}" alt="Bully Filter Logo" class="img-fluid">
+			<div class="col-md-6 titleCard my-auto">
+				<img src="{% static 'Photos/BullyFilter.png' %}"
+				     alt="Bully Filter Logo"
+				     class="img-fluid card-img-top card-img-bottom">
 			</div>
 
-			<div class="col-md-6">
+			<div class="col-md-6 my-auto">
 				<div class="card position-relative">
 					<div class="card-body">
 						<form id="analysisForm"
 						      method="POST">
 
-							{% csrf_token %}
 							{% crispy form %}
 							{% if error %}
 								<div class="alert alert-danger mt-3" role="alert">
@@ -35,8 +36,8 @@
 							</div>
 							{% if textResult %}
 								<hr>
-								<h3>De-Toxed Output</h3>
-								<h5>{{ textResult }}</h5>
+								<h3 class="text-center text-decoration-underline"> De-Toxed Output</h3>
+								<h5 class="text-center">{{ textResult }}</h5>
 							{% endif %}
 
 						</form>

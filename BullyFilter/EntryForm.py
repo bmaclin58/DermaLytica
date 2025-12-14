@@ -16,7 +16,6 @@ class BullyInputForm(forms.Form):
 				'class': 'form-control',
 			}
 		),
-		help_text="Text will be processed by the Bully Filter model.",
 	)
 
 	def __init__(self, *args, **kwargs):
