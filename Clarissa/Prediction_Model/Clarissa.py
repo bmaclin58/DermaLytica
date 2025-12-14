@@ -22,8 +22,8 @@ def clarissa_Prediction(image):
 		image_bytes = image
 
 	headers = {
-			"Accept"      : "application/json",
-			"Content-Type": "application/octet-stream",
+			"Accept"      : "image/png",
+			"Content-Type": "application/json",
 			}
 
 	response = requests.post(

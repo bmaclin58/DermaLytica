@@ -6,14 +6,14 @@ from django.views.generic import FormView, TemplateView
 
 from Clarissa.EntryForm import MRIInputForm
 from Clarissa.Prediction_Model.Clarissa import clarissa_Prediction
-
+from Clarissa.Prediction_Model.WarmUp import warm_hf_endpoint_once
 
 class Clarissa_HomeView(FormView):
 	template_name = 'Clarissa_AI/ClarissaHomePage.html'
 	form_class = MRIInputForm
 
 	def dispatch(self, request, *args, **kwargs):
-		from Clarissa.Prediction_Model.WarmUp import warm_hf_endpoint_once
+
 		# Fire-and-forget warmup (non-blocking)
 		threading.Thread(
 				target = warm_hf_endpoint_once,
