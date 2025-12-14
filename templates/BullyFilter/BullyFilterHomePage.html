@@ -8,7 +8,7 @@
 
 		<div class="row w-100">
 			<div class="col-md-6 titleCard">
-				<img src="{% static 'Photos/BullyFilter.png' %}" alt="Bully Filter Logo" class="img-fluid">
+				<img src="{% static '/Photos/BullyFilter.png' %}" alt="Bully Filter Logo" class="img-fluid">
 			</div>
 
 			<div class="col-md-6">
@@ -19,6 +19,12 @@
 
 							{% csrf_token %}
 							{% crispy form %}
+							{% if error %}
+								<div class="alert alert-danger mt-3" role="alert">
+									<strong>Something went wrong:</strong><br>
+									{{ error }}
+								</div>
+							{% endif %}
 
 							<!-- Loading Indicator -->
 							<div id="loadingIndicator" class="text-center mt-3 d-none">
