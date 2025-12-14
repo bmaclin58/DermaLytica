@@ -4,10 +4,17 @@
 
 <meta name="viewport"
       content="width=device-width, initial-scale=1"/>
+{% if appIs == 'Clarissa'  %}
+<link rel="icon"
+      type="image/x-icon"
+      href="{% static '/Photos/Clarissa.png' %}"/>
+
+{% else %}
 
 <link rel="icon"
       type="image/x-icon"
       href="{% static '/Photos/DermaLytica AI Logo.png' %}"/>
+{% endif %}
 
 <!-- Google fonts-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
