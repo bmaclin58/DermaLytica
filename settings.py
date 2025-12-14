@@ -80,6 +80,7 @@ INSTALLED_APPS = [
 		'DermaLytica.apps.DermaLyticaConfig',
 		'Home_Portfolio.apps.HomePortfolioConfig',
 		'Clarissa.apps.ClarissaConfig',
+		'BullyFilter.apps.BullyFilterConfig',
 		]
 
 MIDDLEWARE = [

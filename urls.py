@@ -25,8 +25,8 @@ urlpatterns = [
 		path('', portfolioHome.as_view(), name = 'portfolio-Home'),
 		path('DermaLytica/', DermaLytica_HomeView.as_view(), name = 'DermaAI-home'),
 		path('prediction/', PredictionView.as_view(), name = 'prediction'),
-		path('Clarissa/', include('Clarissa.urls'))
-
+		path('Clarissa/', include('Clarissa.urls')),
+		path('BullyFilter/', include('BullyFilter.urls')),
 
 		]
 

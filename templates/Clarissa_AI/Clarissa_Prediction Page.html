@@ -5,7 +5,6 @@
 	{% include 'Components/PredictionPageCSS.html' %}
 {% endblock extraCSS %}
 
-
 {% block content %}
 	<div class="back-button">
 		<a href="{% url 'Clarissa-home' %}" class="btn btn-outline-light">
@@ -37,16 +36,18 @@
 
 			<!-- Confidence Score Card -->
 			<div class="col-md-6 my-auto">
-				<div class="confidence-box {% if prediction == 'Benign' %}benign-result{% else %}malignant-result{% endif %}">
-					Confidence: {{ confidence|floatformat:2 }}%
+				<div class="confidence-box {% if prediction == 'Benign' or prediction == 'Normal' %}benign-result{% else %}malignant-result{% endif %}">
+						Prediction: {{ prediction }}
+					<br>Confidence: {{ confidence|floatformat:2 }}%
 				</div>
 			</div>
 		</div>
 
 		<!-- Second Row: Image result (Only shown if malignant or benign) -->
-		{% if prediction != 'Normal' %}
-			<div class="row mt-4">
-				<div class="col-12 text-center">
+
+		<div class="row mt-4">
+			<div class="col-12 text-center">
+				{% if prediction != 'Normal' %}
 					<div class="result-image">
 						<img
 								id="result-image"
@@ -56,8 +57,10 @@
 								style="max-width: 400px;"
 						/>
 					</div>
-				</div>
-			</div>
-		{% endif %}
+				{% else %}
+					<h4>No Tumors Detected</h4>
+					</div>
+					</div>
+				{% endif %}
 	</div>
 {% endblock content %}

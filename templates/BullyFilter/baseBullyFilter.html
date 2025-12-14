@@ -1,0 +1,23 @@
+{% load crispy_forms_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>BullyFilter</title>
+	{% include 'Components/Derma head.html' with  appIs = 'BullyFilter'%}
+</head>
+{% block extraCSS %}
+{% endblock extraCSS %}
+<script>
+{% block extraJS %}
+{% endblock extraJS %}
+</script>
+<body>
+<div id="vantajs-bg" class="vantajs-bg"></div>
+{% block content %}
+{% endblock content %}
+</body>
+{% include 'Components/vantaJS.html' %}
+</html>

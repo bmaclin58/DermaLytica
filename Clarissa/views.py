@@ -34,7 +34,7 @@ class Clarissa_PredictionView(TemplateView):
 		form = MRIInputForm(request.POST, request.FILES)
 
 		if not form.is_valid():
-			return self.render_to_response({ "form": form })
+			return render(request, "Clarissa_AI/Clarissa_Prediction Page.html", { "form": form })
 
 		image_file = form.cleaned_data ["image"]  # InMemoryUploadedFile
 
@@ -49,6 +49,3 @@ class Clarissa_PredictionView(TemplateView):
 				"Image64"   : pred ["image_base64"],
 				}
 		return self.render_to_response(context)
-
-		# If the form is invalid, return to the home page with errors
-		return render(request, "Clarissa_AI/Clarissa_Prediction Page.html", { "form": form })
