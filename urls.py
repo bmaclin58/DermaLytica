@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import include, path
 
 from DermaLytica.views import DermaLytica_HomeView, PredictionView
 from Home_Portfolio.views import portfolioHome
@@ -25,6 +25,8 @@ urlpatterns = [
 		path('', portfolioHome.as_view(), name = 'portfolio-Home'),
 		path('DermaLytica/', DermaLytica_HomeView.as_view(), name = 'DermaAI-home'),
 		path('prediction/', PredictionView.as_view(), name = 'prediction'),
+		path('Clarissa/', include('Clarissa.urls'))
+
 
 		]
 

@@ -1,0 +1,25 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<div class="container">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+		        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+			<ul class="navbar-nav">
+				<li class="nav-item position-relative mx-2">
+					<a class="nav-link" href="{% static '/Files/Clarissa/Benign.png' %}" download>Example Benign</a>
+					<div class="help-bubble d-none">Benign Example <br> From BUSI dataset </div>
+				</li>
+				<li class="nav-item position-relative mx-2">
+					<a class="nav-link" href="{% static '/Files/Clarissa/Malignant.png' %}" download>Example Malignant</a>
+					<div class="help-bubble d-none">Malignant Example <br> From BUSI dataset </div>
+				</li>
+				<li class="nav-item position-relative">
+					<a class="nav-link" href="{% static '/Files/Clarissa/Normal.png' %}" download>Example Normal</a>
+					<div class="help-bubble d-none">Normal Example <br> From BUS-UCLM dataset </div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>

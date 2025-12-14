@@ -78,7 +78,8 @@ INSTALLED_APPS = [
 		'django.contrib.messages',
 		'django.contrib.staticfiles',
 		'DermaLytica.apps.DermaLyticaConfig',
-		'Home_Portfolio.apps.HomePortfolioConfig'
+		'Home_Portfolio.apps.HomePortfolioConfig',
+		'Clarissa.apps.ClarissaConfig',
 		]
 
 MIDDLEWARE = [

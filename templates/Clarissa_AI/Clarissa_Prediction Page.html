@@ -1,0 +1,63 @@
+{% extends 'Clarissa_AI/baseClarissa.html' %}
+{% load static %}
+
+{% block extraCSS %}
+	{% include 'Components/PredictionPageCSS.html' %}
+{% endblock extraCSS %}
+
+
+{% block content %}
+	<div class="back-button">
+		<a href="{% url 'Clarissa-home' %}" class="btn btn-outline-light">
+			<i class="bi bi-arrow-90deg-left"></i> Back
+		</a>
+	</div>
+	<div class="container d-flex flex-column justify-content-center"
+	     style="min-height: 100vh; padding-top: 40px; padding-bottom: 40px;">
+		<!-- First Row: Results and Confidence -->
+		<div class="row mb-4">
+			<!-- Result Card -->
+			<div class="col-md-6 my-auto">
+				<div class="result-card">
+					{% if prediction == 'Benign' or prediction == 'Normal' %}
+						<div class="result-heading text-success text-center">You Appear CLEAR!</div>
+						<div class="result-message">
+							Our analysis indicates the scan does not have any concering features. Continue monitoring
+							for any changes.
+						</div>
+					{% else %}
+						<div class="result-heading text-danger text-center">You should get that looked at</div>
+						<div class="result-message">
+							Our analysis suggests this scan may contain a malignant tumor. We recommend further
+							examinations.
+						</div>
+					{% endif %}
+				</div>
+			</div>
+
+			<!-- Confidence Score Card -->
+			<div class="col-md-6 my-auto">
+				<div class="confidence-box {% if prediction == 'Benign' %}benign-result{% else %}malignant-result{% endif %}">
+					Confidence: {{ confidence|floatformat:2 }}%
+				</div>
+			</div>
+		</div>
+
+		<!-- Second Row: Image result (Only shown if malignant or benign) -->
+		{% if prediction != 'Normal' %}
+			<div class="row mt-4">
+				<div class="col-12 text-center">
+					<div class="result-image">
+						<img
+								id="result-image"
+								src="data:image/jpeg;base64,{{ Image64|safe }}"
+								alt="Prediction Result"
+								class="img-fluid rounded shadow"
+								style="max-width: 400px;"
+						/>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+	</div>
+{% endblock content %}
