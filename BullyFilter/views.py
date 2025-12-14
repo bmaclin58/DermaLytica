@@ -1,12 +1,26 @@
+import sys
+import traceback
+
+from BullyFilter.Prediction_Model.WarmUp import warm_hf_endpoint_once
+
+print("IMPORT BullyFilter.views: start", file=sys.stderr)
+
 import threading
+
+print("IMPORT BullyFilter.views: after stdlib imports", file=sys.stderr)
 
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 
-from BullyFilter.EntryForm import BullyInputForm
-from BullyFilter.Prediction_Model.BullyFilterModel import BullyFilter_Prediction
-from BullyFilter.Prediction_Model.WarmUp import warm_hf_endpoint_once
+print("IMPORT BullyFilter.views: after django imports", file=sys.stderr)
 
+from BullyFilter.EntryForm import BullyInputForm
+
+print("IMPORT BullyFilter.views: after EntryForm import", file=sys.stderr)
+
+from BullyFilter.Prediction_Model.BullyFilterModel import BullyFilter_Prediction
+
+print("IMPORT BullyFilter.views: after BullyFilterModel import", file=sys.stderr)
 
 class BullyFilter_HomeView(FormView):
 	template_name = "BullyFilter/BullyFilterHomePage.html"
@@ -21,8 +35,9 @@ class BullyFilter_HomeView(FormView):
 
 		try:
 			return super().dispatch(request, *args, **kwargs)
-		except Exception:
-			print("BullyFilter dispatch failed (likely template/static/include issue)")
+		except Exception as e:
+			print(f"BullyFilter dispatch failed: {e}")
+			traceback.print_exc()  # This will print the exact line causing the 500 to your console/logs
 			raise
 
 	def form_valid(self, form):
