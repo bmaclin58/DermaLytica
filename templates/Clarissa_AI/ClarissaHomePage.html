@@ -23,7 +23,7 @@
 						<form id="analysisForm"
 						      method="POST"
 						      action="{% url 'Clarissa-prediction' %}"
-						      >
+						      enctype="multipart/form-data">
 
 							{% csrf_token %}
 							{% crispy form %}

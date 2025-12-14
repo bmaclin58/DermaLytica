@@ -30,6 +30,5 @@ def clarissa_Prediction(image):
 			data = image_bytes,
 			timeout = 25,
 			)
-	response.raise_for_status()
 
 	return response

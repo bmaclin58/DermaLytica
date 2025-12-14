@@ -31,29 +31,24 @@ class Clarissa_PredictionView(TemplateView):
 	template_name = 'Clarissa_AI/Clarissa_Prediction Page.html'
 
 	def post(self, request, *args, **kwargs):
-		form = MRIInputForm(request.POST, request.FILES)  # Get form data
+		form = MRIInputForm(request.POST, request.FILES)
 
-		if form.is_valid():
-			instance = form.save(commit = False)
+		if not form.is_valid():
+			return self.render_to_response({ "form": form })
 
-			image = instance.image
+		image_file = form.cleaned_data ["image"]  # InMemoryUploadedFile
 
-			# Make prediction
-			prediction_results = clarissa_Prediction(image)
+		# Forward to HF
+		resp = clarissa_Prediction(image_file)
+		resp.raise_for_status()
 
-			prediction = prediction_results.json() [0]
-
-			predictionImage = prediction ['image_base64']
-			predictionLabel = prediction ['label']
-			predictionConfidence = prediction ['confidence']
-
-			# Pass the results to the template
-			context = {
-					"prediction": predictionLabel,
-					"confidence": predictionConfidence,
-					"Image64"   : predictionImage,
-					}
-			return self.render_to_response(context)
+		pred = resp.json() [0]
+		context = {
+				"prediction": pred ["label"],
+				"confidence": pred ["confidence"],
+				"Image64"   : pred ["image_base64"],
+				}
+		return self.render_to_response(context)
 
 		# If the form is invalid, return to the home page with errors
 		return render(request, "Clarissa_AI/Clarissa_Prediction Page.html", { "form": form })
