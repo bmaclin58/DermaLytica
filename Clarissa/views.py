@@ -43,9 +43,13 @@ class Clarissa_PredictionView(TemplateView):
 		resp.raise_for_status()
 
 		pred = resp.json() [0]
+
+		confidence = pred ["confidence"]
+		confidence = round(confidence * 100, 2)
+
 		context = {
 				"prediction": pred ["label"],
-				"confidence": pred ["confidence"],
+				"confidence": confidence,
 				"Image64"   : pred ["image_base64"],
 				}
 		return self.render_to_response(context)

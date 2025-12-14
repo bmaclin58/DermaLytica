@@ -14,12 +14,17 @@ class BullyFilter_HomeView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		# Warm up the Hugging Face endpoint (fire-and-forget)
-		from BullyFilter.Prediction_Model.WarmUp import warm_hf_endpoint_once
-		threading.Thread(
-			target=warm_hf_endpoint_once,
-			daemon=True,
-		).start()
+		try:
+			from BullyFilter.Prediction_Model.WarmUp import warm_hf_endpoint_once
+			threading.Thread(
+				target=warm_hf_endpoint_once,
+				daemon=True,
+			).start()
+		except Exception:
+			# Don't 500 the page just because warmup failed
+			print("BullyFilter warmup failed")
 		return super().dispatch(request, *args, **kwargs)
+
 
 	def form_valid(self, form):
 		"""
