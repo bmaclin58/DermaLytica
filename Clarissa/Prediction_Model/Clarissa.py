@@ -9,26 +9,27 @@ CLARISSA_HF_ENDPOINT_URL = (
 		or os.getenv("CLARISSA_HF_ENDPOINT_URL")
 )
 
+
 def clarissa_Prediction(image):
-    if hasattr(image, "read"):  # Django ImageFieldFile
-        image_bytes = image.read()
-    elif isinstance(image, (bytes, bytearray)):
-        image_bytes = image
-    else:
-        with open(image, "rb") as f:
-            image_bytes = f.read()
+	if hasattr(image, "read"):  # Django ImageFieldFile
+		image_bytes = image.read()
+	elif isinstance(image, (bytes, bytearray)):
+		image_bytes = image
+	else:
+		with open(image, "rb") as f:
+			image_bytes = f.read()
 
-    headers = {
-        "Accept": "application/json",
-        # DO NOT set Content-Type
-    }
+	headers = {
+			"Accept": "application/json",
+			"Content-Type": "image/png"
+			}
 
-    response = requests.post(
-        CLARISSA_HF_ENDPOINT_URL,
-        headers=headers,
-        data=image_bytes,
-        timeout=25,
-    )
-    response.raise_for_status()
+	response = requests.post(
+			CLARISSA_HF_ENDPOINT_URL,
+			headers = headers,
+			data = image_bytes,
+			timeout = 25,
+			)
+	response.raise_for_status()
 
-    return response
+	return response
