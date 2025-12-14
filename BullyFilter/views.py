@@ -5,6 +5,7 @@ from django.views.generic import FormView
 
 from BullyFilter.EntryForm import BullyInputForm
 from BullyFilter.Prediction_Model.BullyFilterModel import BullyFilter_Prediction
+from BullyFilter.Prediction_Model.WarmUp import warm_hf_endpoint_once
 
 
 class BullyFilter_HomeView(FormView):
@@ -14,11 +15,15 @@ class BullyFilter_HomeView(FormView):
 
 	def dispatch(self, request, *args, **kwargs):
 		try:
-			from BullyFilter.Prediction_Model.WarmUp import warm_hf_endpoint_once
 			threading.Thread(target = warm_hf_endpoint_once, daemon = True).start()
-		except Exception as e:
-			print(f"BullyFilter warmup failed: {e}")
-		return super().dispatch(request, *args, **kwargs)
+		except Exception:
+			print("BullyFilter warmup failed")
+
+		try:
+			return super().dispatch(request, *args, **kwargs)
+		except Exception:
+			print("BullyFilter dispatch failed (likely template/static/include issue)")
+			raise
 
 	def form_valid(self, form):
 		text = form.cleaned_data ["text"]
