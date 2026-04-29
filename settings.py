@@ -15,6 +15,7 @@ import environ
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 
+from GemmaJudge.services.config import normalize_gcs_uri, normalize_storage_path, validate_required_settings
 
 # ------------------------------------------------------------------------
 #                 .Env Secret Variables / Path Building
@@ -25,19 +26,24 @@ BASE_DIR = Path(__file__).resolve().parent
 
 
 def get_secret(secret_name):
-	from google.cloud import secretmanager
-	"""Fetches a secret value from GCP Secret Manager."""
-	project_id = "143642567909"
-	client = secretmanager.SecretManagerServiceClient()
+    """Try GCP Secret Manager as a fallback when local env vars are absent."""
+    local_value = os.getenv(secret_name)
+    if local_value:
+        return local_value
 
-	name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    try:
+        from google.cloud import secretmanager
+    except Exception:
+        return None
 
-	try:
-		response = client.access_secret_version(name = name)
-		return response.payload.data.decode("UTF-8")
-	except Exception as e:
-		print(f"Error retrieving secret {secret_name}: {e}")
-		return None  # Ensure application doesn't crash
+    project_id = os.getenv("GCP_PROJECT_ID")
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    try:
+        response = client.access_secret_version(name=name)
+        return response.payload.data.decode("UTF-8")
+    except Exception:
+        return None # Ensure application doesn't crash
 
 env_file = os.path.join(BASE_DIR, ".env")
 
@@ -51,7 +57,6 @@ else:
 	# Pull secrets from Secret Manager
 	SECRET_KEY = get_secret("djangoSettings")
 	MAPS_API_KEY = get_secret("MAPS_API_KEY")
-
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
@@ -81,6 +86,7 @@ INSTALLED_APPS = [
 		'Home_Portfolio.apps.HomePortfolioConfig',
 		'Clarissa.apps.ClarissaConfig',
 		'BullyFilter.apps.BullyFilterConfig',
+		'GemmaJudge.apps.GemmaJudgeConfig',
 		]
 
 MIDDLEWARE = [
@@ -165,3 +171,38 @@ MEDIA_URL = "/Files/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+_gemma_settings = validate_required_settings(
+    {
+        "GEMMA_JUDGE_ENDPOINT": get_secret("GEMMA_JUDGE_ENDPOINT"),
+        "CLD_USER": get_secret("CLD_USER"),
+        "HMAC_K": get_secret("HMAC_K"),
+        "DUCKDB_PATH": get_secret("DUCKDB_PATH"),
+        "CHROMA_DB_PATH": get_secret("CHROMA_DB_PATH"),
+        "LOCAL_EMBEDDING_MODEL_PATH": get_secret("LOCAL_EMBEDDING_MODEL_PATH"),
+    }
+)
+GEMMA_JUDGE_SYNC_ON_STARTUP = os.getenv("GEMMA_JUDGE_SYNC_ON_STARTUP", "true").lower() == "true"
+GEMMA_JUDGE_ENDPOINT = _gemma_settings["GEMMA_JUDGE_ENDPOINT"]
+GEMMA_JUDGE_MODEL = os.getenv("GEMMA_JUDGE_MODEL", "google/gemma-4-31b-it")
+
+CLD_USER = _gemma_settings["CLD_USER"]
+HMAC_K = _gemma_settings["HMAC_K"]
+
+GEMMA_JUDGE_MOUNTED_DUCKDB_PATH = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_DUCKDB_PATH"))
+GEMMA_JUDGE_MOUNTED_CHROMA_DIR = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_CHROMA_DIR"))
+GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR"))
+
+GEMMA_JUDGE_DUCKDB_PATH = GEMMA_JUDGE_MOUNTED_DUCKDB_PATH or normalize_gcs_uri(_gemma_settings["DUCKDB_PATH"])
+GEMMA_JUDGE_CHROMA_DB_PATH = normalize_gcs_uri(_gemma_settings["CHROMA_DB_PATH"])
+GEMMA_JUDGE_LOCAL_EMBEDDING_MODEL_PATH = normalize_gcs_uri(_gemma_settings["LOCAL_EMBEDDING_MODEL_PATH"])
+
+GEMMA_JUDGE_MAX_TOKENS_QUICK = int(os.getenv("GEMMA_JUDGE_MAX_TOKENS_QUICK"))
+GEMMA_JUDGE_MAX_TOKENS_THINKING = int(os.getenv("GEMMA_JUDGE_MAX_TOKENS_THINKING"))
+
+_runtime_cache_dir = normalize_storage_path(os.getenv("GEMMA_JUDGE_RUNTIME_CACHE_DIR")) or str(
+    BASE_DIR / ".runtime_cache" / "gemma_judge"
+)
+GEMMA_JUDGE_RUNTIME_CACHE_DIR = Path(_runtime_cache_dir)
+GEMMA_JUDGE_LOCAL_CHROMA_DIR = GEMMA_JUDGE_RUNTIME_CACHE_DIR / "mtg_rules_chromadb"
+GEMMA_JUDGE_LOCAL_EMBEDDING_MODEL_DIR = GEMMA_JUDGE_RUNTIME_CACHE_DIR / "embedding_model"

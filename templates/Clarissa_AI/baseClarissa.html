@@ -8,16 +8,13 @@
 	<title>Clarissa Breast Cancer Research</title>
 	{% include 'Components/Derma head.html' with appIs='Clarissa'%}
 </head>
-{% block extraCSS %}
-{% endblock extraCSS %}
+{% block extraCSS %}{% endblock extraCSS %}
 <script>
-{% block extraJS %}
-{% endblock extraJS %}
+{% block extraJS %}{% endblock extraJS %}
 </script>
 <body>
 <div id="vantajs-bg" class="vantajs-bg"></div>
-{% block content %}
-{% endblock content %}
+{% block content %}{% endblock content %}
 </body>
 {% include 'Components/vantaJS.html' %}
 </html>

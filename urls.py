@@ -27,6 +27,7 @@ urlpatterns = [
 		path('prediction/', PredictionView.as_view(), name = 'prediction'),
 		path('Clarissa/', include('Clarissa.urls')),
 		path('BullyFilter/', include('BullyFilter.urls')),
+		path('GemmaJudge/', include('GemmaJudge.urls')),
 
 		]
 
