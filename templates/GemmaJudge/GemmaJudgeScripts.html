@@ -1,0 +1,834 @@
+{% load static %}
+
+(function () {
+    const app = document.getElementById("gemma-judge-app");
+    if (!app) {
+        return;
+    }
+
+    const elements = {
+        formatSelect: document.getElementById("format-select"),
+        librarySearch: document.getElementById("library-search"),
+        libraryViewButtons: Array.prototype.slice.call(document.querySelectorAll("[data-library-view]")),
+        searchResults: document.getElementById("search-results"),
+        selectedCardPanel: document.getElementById("selected-card-panel"),
+        questionForm: document.getElementById("question-form"),
+        questionInput: document.getElementById("question-input"),
+        messagesPanel: document.getElementById("messages-panel"),
+        contextSummaryGrid: document.getElementById("context-summary-grid"),
+        contextTraceList: document.getElementById("context-trace-list"),
+        loadingStatus: document.getElementById("loading-status"),
+        clearSessionButton: document.getElementById("clear-session-button"),
+        quickLayerButton: document.getElementById("quick-layer-button"),
+		quickLayerButtonCard: document.getElementById("quick-layer-button-card"),
+        modeIndicator: document.getElementById("mode-indicator"),
+        modeButtons: Array.prototype.slice.call(document.querySelectorAll("[data-response-mode]"))
+    };
+
+    function buildDefaultContextSummary() {
+        return {
+            status: "Awaiting question.",
+            detectedCards: "No cards detected.",
+            retrievedRules: "No rules retrieved.",
+            endpointStatus: "Gemma endpoint idle."
+        };
+    }
+
+    const state = {
+        libraryQuery: "",
+        libraryView: "cards",
+        results: { cards: [], rules: [] },
+        messages: [],
+        traceEntries: [],
+        contextSummary: buildDefaultContextSummary(),
+        isLoading: false,
+        selectedCards: [],
+        focusedCardId: null,
+        selectedFormat: elements.formatSelect ? elements.formatSelect.value : "Commander",
+        responseMode: "quick",
+        activeAssistantIndex: null
+    };
+
+    const config = {
+        cardsEndpoint: app.dataset.cardsEndpoint || "/api/search/cards/",
+        rulesEndpoint: app.dataset.rulesEndpoint || "/api/search/rules/",
+        askEndpoint: app.dataset.askEndpoint || "/api/ask-rules/"
+    };
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function renderTextWithParagraphs(text) {
+        return String(text)
+            .split("\n")
+            .map(function (line) {
+                return line.trimEnd();
+            })
+            .filter(Boolean)
+            .map(function (line) {
+                if (line.startsWith("-") || line.startsWith("*")) {
+                    return '<div class="message-list-item"><p>' + escapeHtml(line.slice(1).trim()) + "</p></div>";
+                }
+
+                return "<p>" + escapeHtml(line) + "</p>";
+            })
+            .join("");
+    }
+
+    function formatRulingDate(dateKey) {
+        const normalizedDate = String(dateKey || "").trim();
+        const matchedDate = normalizedDate.match(/^(\d{4}-\d{2}-\d{2})/);
+        return matchedDate ? matchedDate[1] : normalizedDate;
+    }
+
+    function renderMarkdown(text) {
+        const content = String(text || "");
+        if (window.GemmaMarkdown && typeof window.GemmaMarkdown.render === "function") {
+            return window.GemmaMarkdown.render(content);
+        }
+
+        return '<div class="markdown-body">' + renderTextWithParagraphs(content) + "</div>";
+    }
+
+    function getSearchCopy() {
+        if (state.libraryView === "rules") {
+            return {
+                awaiting: "Awaiting rules query",
+                empty: "No matching rules found",
+                failed: "Rule search failed.",
+                placeholder: "Search rules..."
+            };
+        }
+
+        return {
+            awaiting: "Awaiting card query",
+            empty: "No matching cards found",
+            failed: "Card search failed.",
+            placeholder: "Search cards..."
+        };
+    }
+
+    function getCardAccent(card) {
+        const colors = Array.isArray(card && card.colors) ? card.colors : [];
+        if (!colors.length) {
+            return "rgba(255, 255, 255, 0.18)";
+        }
+
+        if (colors.indexOf("U") !== -1) {
+            return "#3b82f6";
+        }
+        if (colors.indexOf("G") !== -1) {
+            return "#16a34a";
+        }
+        if (colors.indexOf("R") !== -1) {
+            return "#dc2626";
+        }
+        if (colors.indexOf("B") !== -1) {
+            return "#475569";
+        }
+        if (colors.indexOf("W") !== -1) {
+            return "#facc15";
+        }
+
+        return "rgba(255, 255, 255, 0.18)";
+    }
+
+    function getCardId(card) {
+        return String(card.oracle_id || card.id || card.name || "");
+    }
+
+    function getFocusedCard() {
+        return state.selectedCards.find(function (card) {
+            return getCardId(card) === state.focusedCardId;
+        }) || state.selectedCards[0] || null;
+    }
+
+    function getCookie(name) {
+        const cookieValue = document.cookie
+            .split(";")
+            .map(function (cookie) {
+                return cookie.trim();
+            })
+            .find(function (cookie) {
+                return cookie.startsWith(name + "=");
+            });
+
+        return cookieValue ? decodeURIComponent(cookieValue.split("=")[1]) : "";
+    }
+
+    function setLibraryView(view) {
+        state.libraryView = view === "rules" ? "rules" : "cards";
+        elements.libraryViewButtons.forEach(function (button) {
+            const isActive = button.dataset.libraryView === state.libraryView;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", isActive ? "true" : "false");
+            button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+
+        if (elements.librarySearch) {
+            elements.librarySearch.placeholder = getSearchCopy().placeholder;
+        }
+
+        renderSearchResults();
+    }
+
+    function setSummaryStatus(message) {
+        const text = String(message || "").trim();
+        if (!text) {
+            return;
+        }
+        state.contextSummary.status = text;
+        renderContextSummary();
+    }
+
+    function setSummaryDetectedCards(cards) {
+        const names = (cards || [])
+            .map(function (card) {
+                return String(card && card.name || "").trim();
+            })
+            .filter(Boolean);
+        state.contextSummary.detectedCards = names.length ? names.join(", ") : "None";
+        renderContextSummary();
+    }
+
+    function setSummaryRetrievedRules(rules) {
+        const ruleIds = (rules || [])
+            .map(function (rule) {
+                return String(rule && rule.rule_id || "").trim();
+            })
+            .filter(Boolean)
+            .slice(0, 6);
+        state.contextSummary.retrievedRules = ruleIds.length ? ruleIds.join(", ") : "None";
+        renderContextSummary();
+    }
+
+    function setSummaryEndpointStatus(message) {
+        const text = String(message || "").trim();
+        if (!text) {
+            return;
+        }
+        state.contextSummary.endpointStatus = text;
+        renderContextSummary();
+    }
+
+    function renderSelectedCard() {
+        if (!state.selectedCards.length) {
+            elements.selectedCardPanel.style.setProperty("--card-accent", "rgba(255, 255, 255, 0.1)");
+            elements.selectedCardPanel.innerHTML = [
+                '<div class="empty-state compact">',
+                '<div class="empty-icon">i</div>',
+                "<p>No card selected</p>",
+                "</div>"
+            ].join("");
+            return;
+        }
+
+        const card = getFocusedCard();
+        state.focusedCardId = getCardId(card);
+        elements.selectedCardPanel.style.setProperty("--card-accent", getCardAccent(card));
+
+        const galleryMarkup = state.selectedCards.map(function (selectedCard) {
+            const cardId = getCardId(selectedCard);
+            return [
+                '<button class="selected-card-thumb' + (cardId === state.focusedCardId ? " is-active" : "") + '" type="button" data-card-focus="' + escapeHtml(cardId) + '">',
+                selectedCard.image_uris
+                    ? '<img src="' + escapeHtml(selectedCard.image_uris) + '" alt="' + escapeHtml(selectedCard.name || "Card image") + '">'
+                    : '<div class="empty-state compact"><p>No image</p></div>',
+                "</button>"
+            ].join("");
+        }).join("");
+
+        const rulingsMarkup = [];
+        Object.keys(card.rulings || {}).forEach(function (dateKey) {
+            const formattedDate = formatRulingDate(dateKey);
+            (card.rulings[dateKey] || []).forEach(function (comment) {
+                rulingsMarkup.push("<p><strong>" + escapeHtml(formattedDate) + ":</strong> " + escapeHtml(comment) + "</p>");
+            });
+        });
+
+        elements.selectedCardPanel.innerHTML = [
+            '<div class="selected-card-header">',
+            "<div>",
+            "<h3>" + escapeHtml(card.name || "Unknown card") + "</h3>",
+            '<p class="selected-card-meta">' + escapeHtml(card.mana_cost || "") + "</p>",
+            "</div>",
+            '<button class="card-clear" type="button" data-clear-card="true">X</button>',
+            "</div>",
+            galleryMarkup ? '<div class="selected-card-gallery">' + galleryMarkup + "</div>" : "",
+            '<div class="selected-card-body">',
+            '<div class="selected-card-aside">',
+            card.image_uris
+                ? '<div class="selected-card-image"><img src="' + escapeHtml(card.image_uris) + '" alt="' + escapeHtml(card.name || "Card image") + '"></div>'
+                : "",
+            '<p class="selected-card-type">' + escapeHtml(card.type_line || "") + "</p>",
+            '<div class="selected-card-footer">',
+            '<a class="external-link" href="https://scryfall.com/search?q=' + encodeURIComponent(card.name || "") + '" target="_blank" rel="noopener noreferrer">View on Scryfall</a>',
+            card.power || card.toughness
+                ? '<span class="pt-chip">P/T ' + escapeHtml(card.power || "-") + "/" + escapeHtml(card.toughness || "-") + "</span>"
+                : "",
+            "</div>",
+            "</div>",
+            '<div class="selected-card-main">',
+            '<div class="selected-card-text">' + renderTextWithParagraphs(card.oracle_text || "") + "</div>",
+            "</div>",
+            rulingsMarkup.length
+                ? '<div class="selected-card-rulings"><h4>Card Rulings</h4>' + rulingsMarkup.join("") + "</div>"
+                : "",
+            "</div>"
+        ].join("");
+    }
+
+    function renderSearchResults() {
+        const copy = getSearchCopy();
+        const activeResults = state.libraryView === "rules" ? state.results.rules : state.results.cards;
+
+        if (elements.librarySearch) {
+            elements.librarySearch.placeholder = copy.placeholder;
+        }
+
+        if (state.libraryQuery.length < 2 && !activeResults.length) {
+            elements.searchResults.innerHTML = [
+                '<div class="empty-state">',
+                '<div class="empty-icon">?</div>',
+                "<p>" + escapeHtml(copy.awaiting) + "</p>",
+                "</div>"
+            ].join("");
+            return;
+        }
+
+        if (state.libraryView === "cards") {
+            const cardsMarkup = state.results.cards.map(function (card) {
+                const cardId = getCardId(card);
+                return [
+                    '<button class="result-card' + (cardId === state.focusedCardId ? " is-selected" : "") + '" type="button" data-card-id="' + escapeHtml(cardId) + '">',
+                    '<span class="result-swatch" style="background:' + getCardAccent(card) + ';"></span>',
+                    "<div>",
+                    '<h3 class="result-title">' + escapeHtml(card.name || "Unknown card") + "</h3>",
+                    '<p class="result-meta">' + escapeHtml(card.type_line || "") + "</p>",
+                    "</div>",
+                    "</button>"
+                ].join("");
+            }).join("");
+
+            elements.searchResults.innerHTML = cardsMarkup || [
+                '<div class="empty-state">',
+                '<div class="empty-icon">0</div>',
+                "<p>" + escapeHtml(copy.empty) + "</p>",
+                "</div>"
+            ].join("");
+            return;
+        }
+
+        const rulesMarkup = state.results.rules.map(function (rule) {
+            return [
+                '<article class="rule-card">',
+                '<span class="rule-id">' + escapeHtml(rule.rule_id || "") + "</span>",
+                '<p class="rule-title">' + escapeHtml(rule.title || "Rule Reference") + "</p>",
+                "<p>" + escapeHtml(rule.content || "") + "</p>",
+                "</article>"
+            ].join("");
+        }).join("");
+
+        elements.searchResults.innerHTML = rulesMarkup || [
+            '<div class="empty-state">',
+            '<div class="empty-icon">0</div>',
+            "<p>" + escapeHtml(copy.empty) + "</p>",
+            "</div>"
+        ].join("");
+    }
+
+    function renderMessages() {
+        if (!state.messages.length) {
+            elements.messagesPanel.innerHTML = [
+                '<div class="empty-state hero">',
+                '<img class="hero-logo" src="{% static "GemmaJudge/GemmaJudge.png" %}" alt="Gemma Judge logo">',
+                "<div>",
+                "<h2>Systems Active</h2>",
+                "<p>Input a scenario to begin adjudication.</p>",
+                "</div>",
+                "</div>"
+            ].join("");
+            return;
+        }
+
+        elements.messagesPanel.innerHTML = [
+            '<div class="message-stack">',
+            state.messages.map(function (message) {
+                const isUser = message.role === "user";
+                const content = String(message.text || "").trim() || "Awaiting streamed response...";
+                return [
+                    '<div class="message-row ' + (isUser ? "is-user" : "is-model") + '">',
+                    '<div class="message-label">' + (isUser ? "Query Input" : "Adjudication Result") + "</div>",
+                    '<div class="message-bubble">' + (isUser ? renderTextWithParagraphs(content) : renderMarkdown(content)) + "</div>",
+                    "</div>"
+                ].join("");
+            }).join(""),
+            "</div>"
+        ].join("");
+
+        elements.messagesPanel.scrollTop = elements.messagesPanel.scrollHeight;
+    }
+
+    function renderContextSummary() {
+        if (!elements.contextSummaryGrid) {
+            return;
+        }
+
+        const summaryItems = [
+            { label: "Status", value: state.contextSummary.status },
+            { label: "Detected Cards", value: state.contextSummary.detectedCards },
+            { label: "Retrieved Rules", value: state.contextSummary.retrievedRules },
+            { label: "Gemma Endpoint", value: state.contextSummary.endpointStatus }
+        ];
+
+        elements.contextSummaryGrid.innerHTML = summaryItems.map(function (item) {
+            const value = String(item.value || "").trim();
+            return [
+                '<article class="summary-card">',
+                '<p class="summary-label">' + escapeHtml(item.label) + "</p>",
+                '<p class="summary-value' + (value && value !== "None" ? "" : " is-empty") + '">' + escapeHtml(value || "None") + "</p>",
+                "</article>"
+            ].join("");
+        }).join("");
+    }
+
+    function renderTraceEntries() {
+        if (!elements.contextTraceList) {
+            return;
+        }
+
+        if (!state.traceEntries.length) {
+            elements.contextTraceList.innerHTML = [
+                '<div class="context-card">',
+                "<p>No model thought context yet. Ask a question in Thinking mode to inspect it here.</p>",
+                "</div>"
+            ].join("");
+            return;
+        }
+
+        elements.contextTraceList.innerHTML = [
+            '<div class="trace-list">',
+            state.traceEntries.map(function (entry) {
+                return [
+                    '<article class="trace-item">',
+                    '<span class="trace-source">' + escapeHtml(entry.source || "trace") + "</span>",
+                    '<div class="trace-item-body">' + (entry.isMarkdown ? renderMarkdown(entry.text || "") : renderTextWithParagraphs(entry.text || "")) + "</div>",
+                    "</article>"
+                ].join("");
+            }).join(""),
+            "</div>"
+        ].join("");
+    }
+
+    function renderContextPanel() {
+        renderContextSummary();
+        renderTraceEntries();
+    }
+
+    function renderModeIndicator() {
+        elements.modeIndicator.textContent = "Live API Mode | " + (state.responseMode === "thinking" ? "Thinking" : "Quick Response");
+        elements.modeButtons.forEach(function (button) {
+            button.classList.toggle("is-active", button.dataset.responseMode === state.responseMode);
+        });
+    }
+
+    function renderAll() {
+        renderSelectedCard();
+        renderSearchResults();
+        renderMessages();
+        renderContextPanel();
+        renderModeIndicator();
+    }
+
+    function addTraceEntry(source, text, options) {
+        const entrySource = source || "trace";
+        const rawText = String(text || "");
+        const isMarkdown = Boolean(options && options.markdown);
+        const shouldAppend = Boolean(options && options.append);
+        const preserveWhitespace = Boolean(options && options.preserveWhitespace);
+        const lastEntry = state.traceEntries[state.traceEntries.length - 1] || null;
+        const canAppendToLast = Boolean(
+            shouldAppend &&
+            lastEntry &&
+            lastEntry.source === entrySource &&
+            lastEntry.isMarkdown === isMarkdown
+        );
+
+        if (!rawText) {
+            return;
+        }
+
+        if (canAppendToLast) {
+            lastEntry.text += rawText;
+            renderTraceEntries();
+            return;
+        }
+
+        const cleanText = preserveWhitespace ? rawText : rawText.trim();
+        if (!cleanText || (preserveWhitespace && !rawText.trim())) {
+            return;
+        }
+
+        state.traceEntries.push({
+            source: entrySource,
+            text: cleanText,
+            isMarkdown: isMarkdown
+        });
+        renderTraceEntries();
+    }
+
+    function upsertSelectedCards(cards, replaceAll) {
+        if (replaceAll) {
+            state.selectedCards = [];
+        }
+
+        (cards || []).forEach(function (card) {
+            const cardId = getCardId(card);
+            const existingIndex = state.selectedCards.findIndex(function (selectedCard) {
+                return getCardId(selectedCard) === cardId;
+            });
+
+            if (existingIndex === -1) {
+                state.selectedCards.push(card);
+            } else {
+                state.selectedCards[existingIndex] = card;
+            }
+        });
+
+        if (!state.focusedCardId && state.selectedCards.length) {
+            state.focusedCardId = getCardId(state.selectedCards[0]);
+        }
+
+        renderSelectedCard();
+    }
+
+    async function fetchSearchResults(query) {
+        const [cardsResponse, rulesResponse] = await Promise.all([
+            fetch(config.cardsEndpoint + "?q=" + encodeURIComponent(query)),
+            fetch(config.rulesEndpoint + "?q=" + encodeURIComponent(query))
+        ]);
+
+        if (!cardsResponse.ok || !rulesResponse.ok) {
+            throw new Error("Search endpoints returned a non-200 response.");
+        }
+
+        return {
+            cards: await cardsResponse.json(),
+            rules: await rulesResponse.json()
+        };
+    }
+
+    async function handleSearchInput(query) {
+        state.libraryQuery = query;
+
+        if (query.length < 2) {
+            state.results = { cards: [], rules: [] };
+            renderSearchResults();
+            return;
+        }
+
+        try {
+            state.results = await fetchSearchResults(query);
+            renderSearchResults();
+        } catch (error) {
+            state.results = { cards: [], rules: [] };
+            elements.searchResults.innerHTML = [
+                '<div class="empty-state">',
+                '<div class="empty-icon">!</div>',
+                "<p>" + escapeHtml(getSearchCopy().failed) + "</p>",
+                "</div>"
+            ].join("");
+        }
+    }
+
+    async function streamAskResponse(question) {
+        const outboundMessages = state.messages.filter(function (message, index) {
+            return index !== state.activeAssistantIndex && String(message.text || "").trim();
+        });
+
+        const response = await fetch(config.askEndpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({
+                question: question,
+                messages: outboundMessages,
+                format: state.selectedFormat,
+                mode: state.responseMode
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Ask endpoint returned a non-200 response.");
+        }
+
+        if (!response.body) {
+            throw new Error("Streaming response body was unavailable.");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+        let answerStarted = false;
+        let modelThinkingStarted = false;
+
+        function processLine(line) {
+            if (!line.trim()) {
+                return;
+            }
+
+            const event = JSON.parse(line);
+            const payload = event.payload || {};
+
+            if (event.type === "status") {
+                const message = payload.message || "";
+                if (/querying gemma endpoint/i.test(message)) {
+                    setSummaryEndpointStatus(message);
+                } else {
+                    setSummaryStatus(message);
+                }
+                return;
+            }
+
+            if (event.type === "cards") {
+                const cards = payload.cards || [];
+                upsertSelectedCards(cards, true);
+                setSummaryDetectedCards(cards);
+                return;
+            }
+
+            if (event.type === "rules") {
+                const rules = payload.rules || [];
+                state.results = {
+                    cards: state.results.cards,
+                    rules: rules
+                };
+                setSummaryRetrievedRules(rules);
+                renderSearchResults();
+                return;
+            }
+
+            if (event.type === "thinking") {
+                const source = payload.source || "thinking";
+                const chunk = payload.chunk || "";
+                if (source === "retrieval") {
+                    if (/^Detected cards:/i.test(chunk)) {
+                        state.contextSummary.detectedCards = chunk.replace(/^Detected cards:\s*/i, "") || "None";
+                        renderContextSummary();
+                        return;
+                    }
+
+                    if (/^Retrieved rules:/i.test(chunk)) {
+                        state.contextSummary.retrievedRules = chunk.replace(/^Retrieved rules:\s*/i, "") || "None";
+                        renderContextSummary();
+                        return;
+                    }
+                }
+
+                if (source === "model" && !modelThinkingStarted) {
+                    modelThinkingStarted = true;
+                    setSummaryEndpointStatus("Gemma reasoning streaming.");
+                }
+
+                addTraceEntry(source, chunk, {
+                    markdown: source === "model",
+                    append: source === "model",
+                    preserveWhitespace: source === "model"
+                });
+                return;
+            }
+
+            if (event.type === "answer") {
+                if (!answerStarted) {
+                    answerStarted = true;
+                    setSummaryEndpointStatus("Gemma response streaming.");
+                }
+
+                if (state.activeAssistantIndex !== null && state.messages[state.activeAssistantIndex]) {
+                    state.messages[state.activeAssistantIndex].text += payload.chunk || "";
+                    renderMessages();
+                }
+                return;
+            }
+
+            if (event.type === "error") {
+                const message = payload.message || "The backend returned an error.";
+                setSummaryStatus("Adjudication failed.");
+                setSummaryEndpointStatus(message);
+                addTraceEntry("error", message, { markdown: false });
+                if (state.activeAssistantIndex !== null && state.messages[state.activeAssistantIndex] && !state.messages[state.activeAssistantIndex].text) {
+                    state.messages[state.activeAssistantIndex].text = message;
+                    renderMessages();
+                }
+                return;
+            }
+
+            if (event.type === "done" && answerStarted) {
+                setSummaryEndpointStatus("Gemma response received.");
+            }
+        }
+
+        while (true) {
+            const result = await reader.read();
+            buffer += decoder.decode(result.value || new Uint8Array(), { stream: !result.done });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+            lines.forEach(processLine);
+
+            if (result.done) {
+                if (buffer.trim()) {
+                    processLine(buffer);
+                }
+                break;
+            }
+        }
+    }
+
+    async function handleQuestionSubmit(event) {
+        event.preventDefault();
+
+        const question = elements.questionInput.value.trim();
+        if (!question || state.isLoading) {
+            return;
+        }
+
+        state.messages.push({ role: "user", text: question });
+        state.messages.push({ role: "model", text: "" });
+        state.activeAssistantIndex = state.messages.length - 1;
+        state.traceEntries = [];
+        state.contextSummary = {
+            status: "Starting adjudication.",
+            detectedCards: "No cards detected yet.",
+            retrievedRules: "No rules retrieved yet.",
+            endpointStatus: "Waiting to query Gemma."
+        };
+        state.results = { cards: [], rules: [] };
+        state.selectedCards = [];
+        state.focusedCardId = null;
+        state.libraryQuery = "";
+        if (elements.librarySearch) {
+            elements.librarySearch.value = "";
+        }
+        elements.questionInput.value = "";
+        state.isLoading = true;
+        elements.loadingStatus.hidden = false;
+        renderAll();
+
+        try {
+            await streamAskResponse(question);
+        } catch (error) {
+            const message = error.message || "Failed to fetch adjudication output.";
+            if (state.activeAssistantIndex !== null && state.messages[state.activeAssistantIndex]) {
+                state.messages[state.activeAssistantIndex].text = "Error: " + message;
+            }
+            setSummaryStatus("Adjudication failed.");
+            setSummaryEndpointStatus(message);
+            addTraceEntry("error", message, { markdown: false });
+        } finally {
+            state.isLoading = false;
+            elements.loadingStatus.hidden = true;
+            state.activeAssistantIndex = null;
+            renderMessages();
+        }
+    }
+
+    elements.formatSelect.addEventListener("change", function (event) {
+        state.selectedFormat = event.target.value;
+        renderModeIndicator();
+    });
+
+    elements.libraryViewButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            setLibraryView(button.dataset.libraryView);
+        });
+    });
+
+    elements.librarySearch.addEventListener("input", function (event) {
+        handleSearchInput(event.target.value.trim());
+    });
+
+    elements.searchResults.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-card-id]");
+        if (!button) {
+            return;
+        }
+
+        const selected = state.results.cards.find(function (card) {
+            return getCardId(card) === button.dataset.cardId;
+        }) || null;
+
+        if (!selected) {
+            return;
+        }
+
+        upsertSelectedCards([selected], false);
+        state.focusedCardId = getCardId(selected);
+        renderSelectedCard();
+        renderSearchResults();
+    });
+
+    elements.selectedCardPanel.addEventListener("click", function (event) {
+        const focusButton = event.target.closest("[data-card-focus]");
+        if (focusButton) {
+            state.focusedCardId = focusButton.dataset.cardFocus;
+            renderSelectedCard();
+            renderSearchResults();
+            return;
+        }
+
+        const clearButton = event.target.closest("[data-clear-card]");
+        if (!clearButton) {
+            return;
+        }
+
+        state.selectedCards = [];
+        state.focusedCardId = null;
+        renderSelectedCard();
+        renderSearchResults();
+    });
+
+    elements.modeButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            state.responseMode = button.dataset.responseMode === "thinking" ? "thinking" : "quick";
+            renderModeIndicator();
+        });
+    });
+
+    elements.questionForm.addEventListener("submit", handleQuestionSubmit);
+
+    elements.clearSessionButton.addEventListener("click", function () {
+        state.messages = [];
+        state.traceEntries = [];
+        state.contextSummary = buildDefaultContextSummary();
+        state.results = { cards: [], rules: [] };
+        state.selectedCards = [];
+        state.focusedCardId = null;
+        state.activeAssistantIndex = null;
+        state.isLoading = false;
+        state.libraryQuery = "";
+        if (elements.librarySearch) {
+            elements.librarySearch.value = "";
+        }
+        renderAll();
+    });
+
+    elements.quickLayerButton.addEventListener("click", function () {
+        elements.questionInput.value = "How do activation costs and activated abilities work?";
+        elements.questionInput.focus();
+    });
+elements.quickLayerButtonCard.addEventListener("click", function () {
+        elements.questionInput.value = "Is Deflecting Swat free if my commander is an enchantment?";
+        elements.questionInput.focus();
+    });
+
+    setLibraryView("cards");
+    renderAll();
+})();

@@ -1,0 +1,232 @@
+{% extends "GemmaJudge/baseGemmaJudge.html" %}
+{% load static %}
+
+{% block title %}Gemma Oracle{% endblock title %}
+
+{% block page_css %}
+	{% include "GemmaJudge/GemmaJudgeStyles.html" %}
+{% endblock page_css %}
+
+{% block content %}
+	<div
+			class="oracle-shell"
+			id="gemma-judge-app"
+			data-use-api="true"
+			data-cards-endpoint="/api/search/cards/"
+			data-rules-endpoint="/api/search/rules/"
+			data-ask-endpoint="/api/ask-rules/"
+	>
+		<header class="oracle-header">
+			<div class="brand-lockup">
+				<div class="brand-mark">
+					<img src="{% static 'GemmaJudge/GemmaJudge.png' %}" alt="Gemma Judge logo">
+				</div>
+				<div class="brand-copy-block">
+					<p class="eyebrow">Rules Console</p>
+					<h1>Gemma Oracle</h1>
+					<div class="response-mode-toggle" id="response-mode-toggle" aria-label="Response mode">
+						<button
+								type="button"
+								class="mode-toggle-button is-active"
+								data-response-mode="quick"
+						>
+							Quick Response
+						</button>
+						<button
+								type="button"
+								class="mode-toggle-button"
+								data-response-mode="thinking"
+						>
+							Thinking
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="header-center">
+				<label class="control-group" for="format-select">
+					<span>Format</span>
+					<select id="format-select" name="format">
+						<option value="Commander">Commander</option>
+						<option value="Standard">Standard</option>
+						<option value="Pioneer">Pioneer</option>
+						<option value="Modern">Modern</option>
+						<option value="Legacy">Legacy</option>
+						<option value="Vintage">Vintage</option>
+						<option value="Pauper">Pauper</option>
+						<option value="Limited">Limited (Draft/Sealed)</option>
+					</select>
+				</label>
+			</div>
+
+			<div class="header-controls">
+				<div class="status-cluster">
+					<div class="status-pill">
+						<span class="signal-dot is-live"></span>
+						<span>DuckDB Connected</span>
+					</div>
+					<div class="status-pill">
+						<span class="status-glyph">AI</span>
+						<span>Inference Shell Ready</span>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<div class="oracle-workspace">
+			<aside class="oracle-sidebar">
+				<section class="sidebar-section">
+					<div class="section-heading">
+						<span>Active Reference</span>
+					</div>
+					<div class="selected-card-panel" id="selected-card-panel">
+						<div class="empty-state compact">
+							<div class="empty-icon">i</div>
+							<p>No card selected</p>
+						</div>
+					</div>
+				</section>
+
+				<section class="sidebar-section grow">
+					<div class="section-heading">
+						<span>Library Inspector</span>
+					</div>
+
+					<div
+							class="library-view-toggle"
+							id="library-view-toggle"
+							role="tablist"
+							aria-label="Library view"
+					>
+						<button
+								type="button"
+								class="library-view-button is-active"
+								data-library-view="cards"
+								role="tab"
+								aria-selected="true"
+						>
+							Cards
+						</button>
+						<button
+								type="button"
+								class="library-view-button"
+								data-library-view="rules"
+								role="tab"
+								aria-selected="false"
+						>
+							Rules
+						</button>
+					</div>
+
+					<label class="search-frame" for="library-search">
+						<span class="search-glyph">Search</span>
+						<input
+								id="library-search"
+								type="text"
+								autocomplete="off"
+								placeholder="Search metadata..."
+						>
+					</label>
+
+					<div class="search-results" id="search-results">
+						<div class="empty-state">
+							<div class="empty-icon">?</div>
+							<p>Awaiting query</p>
+						</div>
+					</div>
+				</section>
+
+				<footer class="sidebar-footer">
+					<div class="footer-accent"></div>
+					<p>Live mode is active. Ask a question to retrieve cards, rules context, and a streamed Gemma
+					   adjudication.</p>
+				</footer>
+			</aside>
+
+			<main class="oracle-main">
+				<section class="query-strip">
+					<form id="question-form" class="query-form">
+						{% csrf_token %}
+						<input
+								id="question-input"
+								type="text"
+								autocomplete="off"
+								placeholder="Consult the Oracle regarding rules or interactions..."
+						>
+						<div class="query-actions">
+							<span class="input-hint">Enter</span>
+							<button id="submit-question" type="submit">Ask</button>
+						</div>
+					</form>
+				</section>
+
+				<section class="analysis-card">
+					<div class="analysis-toolbar">
+						<div class="toolbar-group">
+							<span class="toolbar-label">Inference Logic: Gemma Rules Engine</span>
+							<span class="loading-badge" id="loading-status" hidden>Computing...</span>
+						</div>
+
+						<div class="toolbar-group toolbar-group-right">
+							<span class="toolbar-meta" id="mode-indicator">Live API Mode</span>
+							<button id="clear-session-button" type="button" class="ghost-button">Clear Session</button>
+						</div>
+					</div>
+
+					<div class="analysis-grid">
+						<section class="reasoning-panel" id="messages-panel">
+							<div class="empty-state hero">
+								<img
+										class="hero-logo"
+										src="{% static 'GemmaJudge/GemmaJudge.png' %}"
+										alt="Gemma Judge logo"
+								>
+								<div>
+									<h2>Systems Active</h2>
+									<p>Input a scenario to begin adjudication.</p>
+								</div>
+							</div>
+						</section>
+
+						<aside class="intelligence-panel">
+							<div class="section-heading with-rule">
+								<span>Intelligence Context</span>
+							</div>
+
+							<div id="context-panel" class="context-panel">
+								<div id="context-summary-grid" class="context-summary-grid">
+									<div></div>
+									<div></div>
+									<div></div>
+									<div></div>
+								</div>
+
+								<div id="context-trace-list" class="context-trace-list">
+									<div class="context-card">
+										<p>No direct rules citations mapped in current context. Use Search to inspect
+										   likely CR entries.</p>
+									</div>
+								</div>
+							</div>
+
+							<button id="quick-layer-button" type="button" class="secondary-button">
+								Rule Walkthrough Example
+							</button>
+							<button id="quick-layer-button-card" type="button" class="secondary-button">
+								Card Walkthrough Example
+							</button>
+						</aside>
+					</div>
+				</section>
+			</main>
+		</div>
+	</div>
+{% endblock content %}
+
+{% block page_js %}
+	<script src="{% static 'GemmaJudge/markdownRenderer.js' %}"></script>
+	<script>
+{% include "GemmaJudge/GemmaJudgeScripts.html" %}
+
+	</script>
+{% endblock page_js %}
