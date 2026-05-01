@@ -52,6 +52,28 @@ def is_gcs_uri(value: str | Path | None) -> bool:
     return normalize_storage_path(value).startswith("gs://")
 
 
+def build_required_setting_names(
+    mounted_duckdb_path: str | Path | None = None,
+    mounted_chroma_dir: str | Path | None = None,
+    mounted_embedding_model_dir: str | Path | None = None,
+) -> tuple[str, ...]:
+    """Only require remote asset paths when the matching mounted asset is absent."""
+    required = [
+        "GEMMA_JUDGE_ENDPOINT",
+        "CLD_USER",
+        "HMAC_K",
+    ]
+
+    if not normalize_storage_path(mounted_duckdb_path):
+        required.append("DUCKDB_PATH")
+    if not normalize_storage_path(mounted_chroma_dir):
+        required.append("CHROMA_DB_PATH")
+    if not normalize_storage_path(mounted_embedding_model_dir):
+        required.append("LOCAL_EMBEDDING_MODEL_PATH")
+
+    return tuple(required)
+
+
 def validate_required_settings(
     settings_map: Mapping[str, str | Path | None],
     required_keys: tuple[str, ...] = REQUIRED_SETTING_NAMES,

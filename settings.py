@@ -15,7 +15,11 @@ import environ
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 
-from GemmaJudge.services.config import normalize_gcs_uri, normalize_storage_path, validate_required_settings
+from GemmaJudge.services.config import (
+    build_required_setting_names,
+    normalize_storage_path,
+    validate_required_settings,
+)
 
 # ------------------------------------------------------------------------
 #                 .Env Secret Variables / Path Building
@@ -172,15 +176,25 @@ MEDIA_URL = "/Files/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+GEMMA_JUDGE_MOUNTED_DUCKDB_PATH = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_DUCKDB_PATH"))
+GEMMA_JUDGE_MOUNTED_CHROMA_DIR = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_CHROMA_DIR"))
+GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR"))
+
+_raw_gemma_settings = {
+    "GEMMA_JUDGE_ENDPOINT": get_secret("GEMMA_JUDGE_ENDPOINT"),
+    "CLD_USER": get_secret("CLD_USER"),
+    "HMAC_K": get_secret("HMAC_K"),
+    "DUCKDB_PATH": get_secret("DUCKDB_PATH"),
+    "CHROMA_DB_PATH": get_secret("CHROMA_DB_PATH"),
+    "LOCAL_EMBEDDING_MODEL_PATH": get_secret("LOCAL_EMBEDDING_MODEL_PATH"),
+}
 _gemma_settings = validate_required_settings(
-    {
-        "GEMMA_JUDGE_ENDPOINT": get_secret("GEMMA_JUDGE_ENDPOINT"),
-        "CLD_USER": get_secret("CLD_USER"),
-        "HMAC_K": get_secret("HMAC_K"),
-        "DUCKDB_PATH": get_secret("DUCKDB_PATH"),
-        "CHROMA_DB_PATH": get_secret("CHROMA_DB_PATH"),
-        "LOCAL_EMBEDDING_MODEL_PATH": get_secret("LOCAL_EMBEDDING_MODEL_PATH"),
-    }
+    _raw_gemma_settings,
+    required_keys=build_required_setting_names(
+        mounted_duckdb_path=GEMMA_JUDGE_MOUNTED_DUCKDB_PATH,
+        mounted_chroma_dir=GEMMA_JUDGE_MOUNTED_CHROMA_DIR,
+        mounted_embedding_model_dir=GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR,
+    ),
 )
 GEMMA_JUDGE_SYNC_ON_STARTUP = os.getenv("GEMMA_JUDGE_SYNC_ON_STARTUP", "true").lower() == "true"
 GEMMA_JUDGE_ENDPOINT = _gemma_settings["GEMMA_JUDGE_ENDPOINT"]
@@ -189,13 +203,14 @@ GEMMA_JUDGE_MODEL = os.getenv("GEMMA_JUDGE_MODEL", "google/gemma-4-31b-it")
 CLD_USER = _gemma_settings["CLD_USER"]
 HMAC_K = _gemma_settings["HMAC_K"]
 
-GEMMA_JUDGE_MOUNTED_DUCKDB_PATH = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_DUCKDB_PATH"))
-GEMMA_JUDGE_MOUNTED_CHROMA_DIR = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_CHROMA_DIR"))
-GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR = normalize_storage_path(os.getenv("GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR"))
-
-GEMMA_JUDGE_DUCKDB_PATH = GEMMA_JUDGE_MOUNTED_DUCKDB_PATH or normalize_gcs_uri(_gemma_settings["DUCKDB_PATH"])
-GEMMA_JUDGE_CHROMA_DB_PATH = normalize_gcs_uri(_gemma_settings["CHROMA_DB_PATH"])
-GEMMA_JUDGE_LOCAL_EMBEDDING_MODEL_PATH = normalize_gcs_uri(_gemma_settings["LOCAL_EMBEDDING_MODEL_PATH"])
+GEMMA_JUDGE_DUCKDB_PATH = GEMMA_JUDGE_MOUNTED_DUCKDB_PATH or normalize_storage_path(_raw_gemma_settings.get("DUCKDB_PATH"))
+GEMMA_JUDGE_CHROMA_DB_PATH = GEMMA_JUDGE_MOUNTED_CHROMA_DIR or normalize_storage_path(
+    _raw_gemma_settings.get("CHROMA_DB_PATH")
+)
+GEMMA_JUDGE_LOCAL_EMBEDDING_MODEL_PATH = (
+    GEMMA_JUDGE_MOUNTED_EMBEDDING_MODEL_DIR
+    or normalize_storage_path(_raw_gemma_settings.get("LOCAL_EMBEDDING_MODEL_PATH"))
+)
 
 GEMMA_JUDGE_MAX_TOKENS_QUICK = int(os.getenv("GEMMA_JUDGE_MAX_TOKENS_QUICK"))
 GEMMA_JUDGE_MAX_TOKENS_THINKING = int(os.getenv("GEMMA_JUDGE_MAX_TOKENS_THINKING"))
