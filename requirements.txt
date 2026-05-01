@@ -128,7 +128,7 @@ tomli==2.0.1
 traitlets==5.14.3
 trio==0.27.0
 trio-websocket==0.11.1
-typing_extensions==4.12.2
+typing_extensions
 tzdata==2025.1
 tzlocal==5.2
 urllib3==2.2.3
