@@ -12,9 +12,9 @@
 			class="oracle-shell"
 			id="gemma-judge-app"
 			data-use-api="true"
-			data-cards-endpoint="/api/search/cards/"
-			data-rules-endpoint="/api/search/rules/"
-			data-ask-endpoint="/api/ask-rules/"
+			data-cards-endpoint="{% url 'gemmajudge-search-cards' %}"
+			data-rules-endpoint="{% url 'gemmajudge-search-rules' %}"
+			data-ask-endpoint="{% url 'gemmajudge-ask-rules' %}"
 	>
 		<header class="oracle-header">
 			<div class="brand-lockup">
